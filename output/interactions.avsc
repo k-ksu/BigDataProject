@@ -1,0 +1,37 @@
+{
+  "type" : "record",
+  "name" : "interactions",
+  "doc" : "Sqoop import of interactions",
+  "fields" : [ {
+    "name" : "id",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "id",
+    "sqlType" : "4"
+  }, {
+    "name" : "user_id",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "user_id",
+    "sqlType" : "12"
+  }, {
+    "name" : "item_id",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "item_id",
+    "sqlType" : "12"
+  }, {
+    "name" : "interaction_flag",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "interaction_flag",
+    "sqlType" : "4"
+  }, {
+    "name" : "ts",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnName" : "ts",
+    "sqlType" : "-5"
+  } ],
+  "tableName" : "interactions"
+}

@@ -1,0 +1,151 @@
+{
+  "type" : "record",
+  "name" : "tracks",
+  "doc" : "Sqoop import of tracks",
+  "fields" : [ {
+    "name" : "id",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "id",
+    "sqlType" : "12"
+  }, {
+    "name" : "name",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "name",
+    "sqlType" : "12"
+  }, {
+    "name" : "album",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "album",
+    "sqlType" : "12"
+  }, {
+    "name" : "album_id",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "album_id",
+    "sqlType" : "12"
+  }, {
+    "name" : "artists",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "artists",
+    "sqlType" : "12"
+  }, {
+    "name" : "artist_ids",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "artist_ids",
+    "sqlType" : "12"
+  }, {
+    "name" : "track_number",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "track_number",
+    "sqlType" : "4"
+  }, {
+    "name" : "disc_number",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "disc_number",
+    "sqlType" : "4"
+  }, {
+    "name" : "explicit",
+    "type" : [ "null", "boolean" ],
+    "default" : null,
+    "columnName" : "explicit",
+    "sqlType" : "-7"
+  }, {
+    "name" : "danceability",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "danceability",
+    "sqlType" : "8"
+  }, {
+    "name" : "energy",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "energy",
+    "sqlType" : "8"
+  }, {
+    "name" : "key",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "key",
+    "sqlType" : "4"
+  }, {
+    "name" : "loudness",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "loudness",
+    "sqlType" : "8"
+  }, {
+    "name" : "mode",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "mode",
+    "sqlType" : "4"
+  }, {
+    "name" : "speechiness",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "speechiness",
+    "sqlType" : "8"
+  }, {
+    "name" : "acousticness",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "acousticness",
+    "sqlType" : "8"
+  }, {
+    "name" : "instrumentalness",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "instrumentalness",
+    "sqlType" : "8"
+  }, {
+    "name" : "liveness",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "liveness",
+    "sqlType" : "8"
+  }, {
+    "name" : "valence",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "valence",
+    "sqlType" : "8"
+  }, {
+    "name" : "tempo",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "tempo",
+    "sqlType" : "8"
+  }, {
+    "name" : "duration_ms",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "duration_ms",
+    "sqlType" : "4"
+  }, {
+    "name" : "time_signature",
+    "type" : [ "null", "double" ],
+    "default" : null,
+    "columnName" : "time_signature",
+    "sqlType" : "8"
+  }, {
+    "name" : "year",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "year",
+    "sqlType" : "4"
+  }, {
+    "name" : "release_date",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "release_date",
+    "sqlType" : "12"
+  } ],
+  "tableName" : "tracks"
+}
