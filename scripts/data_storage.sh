@@ -2,7 +2,6 @@
 
 echo "=== Data Storage: Building PostgreSQL database ==="
 
-# Run the Python script to create tables, load data, and verify
 python3 scripts/build_projectdb.py
 
 if [ $? -eq 0 ]; then

@@ -40,9 +40,6 @@ IMPORT_FILES = [
     os.path.join(DATA_DIR, "interaction.csv"),
 ]
 
-# ---------------------------------------------------------------------------
-# Logging
-# ---------------------------------------------------------------------------
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -143,12 +140,10 @@ def run_test_queries(conn):
     with open(sql_path, "r", encoding="utf-8") as fh:
         content = fh.read()
 
-    # Split on semicolons to get individual statements
     statements = [s.strip() for s in content.split(";") if s.strip()]
 
     with conn.cursor() as cur:
         for stmt in statements:
-            # Skip pure comment blocks
             lines = [l for l in stmt.splitlines() if not l.strip().startswith("--")]
             clean = "\n".join(lines).strip()
             if not clean:
@@ -160,11 +155,11 @@ def run_test_queries(conn):
             )
             cur.execute(stmt + ";")
 
-            if cur.description:  # SELECT — has result set
+            if cur.description:
                 columns = [desc[0] for desc in cur.description]
                 rows = cur.fetchall()
                 log.info("  Columns: %s", columns)
-                for row in rows[:10]:  # print at most 10 rows
+                for row in rows[:10]:
                     log.info("  %s", pformat(row))
                 if len(rows) > 10:
                     log.info("  ... (%d rows total)", len(rows))
@@ -181,13 +176,8 @@ def main():
     password = read_password(SECRETS_FILE)
 
     with get_connection(password) as conn:
-        # Step 1 — Create tables (idempotent: drops first)
         run_create_tables(conn)
-
-        # Step 2 — Load CSV data
         run_import_data(conn)
-
-        # Step 3 — Verify
         run_test_queries(conn)
 
     log.info("=" * 60)

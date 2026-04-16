@@ -1,12 +1,4 @@
 #!/bin/bash
-# Stage 1 - Step 1: Data Collection
-# Downloads the music interaction dataset from Kaggle
-# Dataset: https://www.kaggle.com/datasets/huynguyen1902/music-interaction
-#
-# Prerequisites:
-#   - Kaggle CLI installed: pip install kaggle
-#   - Kaggle API token placed at ~/.kaggle/kaggle.json
-#     (Download from https://www.kaggle.com/settings → "Create New Token")
 
 set -e
 
@@ -22,10 +14,8 @@ REQUIRED_FILES=(
 
 echo "=== Data Collection ==="
 
-# Create data directory if it doesn't exist
 mkdir -p "${DATA_DIR}"
 
-# Check if all required files already exist
 all_present=true
 for file in "${REQUIRED_FILES[@]}"; do
     if [ ! -f "${DATA_DIR}/${file}" ]; then
@@ -41,7 +31,6 @@ if [ "${all_present}" = true ]; then
     exit 0
 fi
 
-# Attempt download via Kaggle CLI
 if command -v kaggle &> /dev/null; then
     echo "Downloading dataset '${DATASET}' via Kaggle CLI..."
     kaggle datasets download -d "${DATASET}" --unzip -p "${DATA_DIR}"
@@ -64,7 +53,6 @@ else
     exit 1
 fi
 
-# Verify that all required files are present after download
 echo "Verifying downloaded files..."
 missing=false
 for file in "${REQUIRED_FILES[@]}"; do
