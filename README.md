@@ -77,12 +77,12 @@ bash scripts/stage1.sh
 | `tracks_part` | AVRO + Snappy | `year` | `id` × 11 | catalogue-style table for content joins |
 | `interactions_part` | AVRO + Snappy | `interaction_flag` | `user_id` × 11 | fact table; partition key is the ML target |
 
-**EDA insights produced:**
-1. `q1` — Top 10 most-interacted tracks
-2. `q2` — Class balance for `interaction_flag` (informs Stage 3 ML)
-3. `q3` — Catalogue evolution: track count + average duration / energy / danceability per year
-4. `q4` — Top 20 most active users
-5. `q5` — Audio-feature signature of popular vs. mid vs. cold tracks
+**EDA insights produced (each one is wired to a Stage 3 modelling decision):**
+1. `q1` — class balance of `interaction_flag` → class weights & metric choice (PR-AUC vs ROC-AUC).
+2. `q2` — distribution of positive interactions per (user, artist) pair → whether artist features / embeddings will pay off.
+3. `q3` — average audio features for positive vs negative interactions → which audio features actually discriminate the target.
+4. `q4` — positive-rate vs track popularity bucket → popularity bias and cold-start severity.
+5. `q5` — user-activity power law → per-user train/test split and activity-stratified evaluation.
 
 **HDFS layout after Stage 2:**
 ```

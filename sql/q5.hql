@@ -1,67 +1,51 @@
--- A track is "popular" iff its interaction_count is in the top decile of tracks that received any interaction; this informs feature engineering in the stage 3 ML pipeline.
+-- q5: user-activity power law -- distribution of users by # of interactions.
+-- Stage-3 implication: a heavy long tail of low-activity users means most
+-- of the user-side signal comes from a small core; train/test must be
+-- split per-user (not random row split) so cold users land in test, and
+-- evaluation should be reported separately for each activity bucket.
 USE team11_projectdb;
 
 SET hive.resultset.use.unique.column.names = false;
 
 DROP TABLE IF EXISTS q5_results;
 CREATE EXTERNAL TABLE q5_results(
-    bucket           STRING,
-    n_tracks         BIGINT,
-    avg_danceability DOUBLE,
-    avg_energy       DOUBLE,
-    avg_valence      DOUBLE,
-    avg_loudness     DOUBLE,
-    avg_tempo        DOUBLE,
-    avg_acousticness DOUBLE
+    activity_bucket  STRING,
+    user_count       BIGINT,
+    pct_users        DOUBLE,
+    n_interactions   BIGINT,
+    pct_interactions DOUBLE
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 LOCATION 'project/hive/warehouse/q5_results';
 
-WITH track_pop AS (
-    SELECT
-        t.id           AS track_id,
-        t.danceability,
-        t.energy,
-        t.valence,
-        t.loudness,
-        t.tempo,
-        t.acousticness,
-        COUNT(i.user_id) AS interaction_count
-    FROM tracks_part t
-    LEFT JOIN interactions_part i
-           ON i.item_id = t.id AND i.interaction_flag = 1
-    GROUP BY t.id, t.danceability, t.energy, t.valence,
-             t.loudness, t.tempo, t.acousticness
+WITH user_stats AS (
+    SELECT user_id, COUNT(*) AS n
+    FROM interactions_part
+    GROUP BY user_id
 ),
-quantiles AS (
-    SELECT percentile_approx(interaction_count, 0.90) AS p90
-    FROM track_pop
-    WHERE interaction_count > 0
-),
-labelled AS (
+bucketed AS (
     SELECT
         CASE
-            WHEN tp.interaction_count >= q.p90 THEN 'popular'
-            WHEN tp.interaction_count > 0      THEN 'mid'
-            ELSE 'cold'
-        END AS bucket,
-        tp.danceability, tp.energy, tp.valence,
-        tp.loudness, tp.tempo, tp.acousticness
-    FROM track_pop tp CROSS JOIN quantiles q
+            WHEN n <= 1    THEN '1'
+            WHEN n <= 5    THEN '2-5'
+            WHEN n <= 20   THEN '6-20'
+            WHEN n <= 100  THEN '21-100'
+            WHEN n <= 500  THEN '101-500'
+            ELSE                '500+'
+        END AS activity_bucket,
+        n
+    FROM user_stats
 )
 INSERT OVERWRITE TABLE q5_results
 SELECT
-    bucket,
-    COUNT(*)                    AS n_tracks,
-    ROUND(AVG(danceability), 4) AS avg_danceability,
-    ROUND(AVG(energy),       4) AS avg_energy,
-    ROUND(AVG(valence),      4) AS avg_valence,
-    ROUND(AVG(loudness),     4) AS avg_loudness,
-    ROUND(AVG(tempo),        4) AS avg_tempo,
-    ROUND(AVG(acousticness), 4) AS avg_acousticness
-FROM labelled
-GROUP BY bucket
-ORDER BY bucket;
+    activity_bucket,
+    COUNT(*)                                            AS user_count,
+    ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 4)  AS pct_users,
+    SUM(n)                                              AS n_interactions,
+    ROUND(100.0 * SUM(n) / SUM(SUM(n)) OVER (), 4)      AS pct_interactions
+FROM bucketed
+GROUP BY activity_bucket
+ORDER BY n_interactions;
 
 INSERT OVERWRITE DIRECTORY 'project/output/q5'
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','

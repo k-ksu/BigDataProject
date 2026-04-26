@@ -1,5 +1,4 @@
 #!/bin/bash
-# Stage 2: build the Hive warehouse, run EDA queries, fetch CSV results.
 
 set -euo pipefail
 
@@ -61,14 +60,13 @@ echo "Hive results saved to output/hive_results.txt"
 echo ""
 echo "--- Step 3: Running EDA queries q1..q5 ---"
 
-# Headers are owned by this script because  INSERT OVERWRITE DIRECTORY  does
-# not emit them; keeping them here keeps the q*.hql files reusable elsewhere.
+# INSERT OVERWRITE DIRECTORY drops headers, so we add them here.
 declare -A HEADERS=(
-    [q1]="track_id,track_name,artists,interaction_count"
-    [q2]="interaction_flag,cnt,pct"
-    [q3]="year,track_count,avg_duration_min,avg_energy,avg_danceability"
-    [q4]="user_id,interaction_count,distinct_tracks"
-    [q5]="bucket,n_tracks,avg_danceability,avg_energy,avg_valence,avg_loudness,avg_tempo,avg_acousticness"
+    [q1]="interaction_flag,cnt,pct"
+    [q2]="positives_per_user_artist,pair_count,pct"
+    [q3]="interaction_flag,n,avg_danceability,avg_energy,avg_valence,avg_acousticness,avg_loudness,avg_tempo"
+    [q4]="popularity_bucket,n_tracks,n_interactions,n_positive,positive_rate"
+    [q5]="activity_bucket,user_count,pct_users,n_interactions,pct_interactions"
 )
 
 for q in q1 q2 q3 q4 q5; do
