@@ -1,8 +1,7 @@
 -- q5: user-activity power law -- distribution of users by # of interactions.
 -- Stage-3 implication: a heavy long tail of low-activity users means most
--- of the user-side signal comes from a small core; train/test must be
--- split per-user (not random row split) so cold users land in test, and
--- evaluation should be reported separately for each activity bucket.
+-- of the user-side signal comes from a small core; stage 3 should avoid
+-- random row split and use user-level splits with temporal context.
 USE team11_projectdb;
 
 SET hive.resultset.use.unique.column.names = false;

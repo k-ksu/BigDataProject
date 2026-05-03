@@ -3,7 +3,7 @@
 **Course:** Big Data — Innopolis University  
 **Team:** team11 (4 members)  
 **Dataset:** [Music Interaction](https://www.kaggle.com/datasets/huynguyen1902/music-interaction/data) (~1.3 GB)  
-**ML Task:** Binary classification (`exists`) — metrics: AUC ROC + AUC PR
+**ML Task:** Soft binary classification (`interaction_flag`) — primary metric: AUC PR
 
 ## Repository Structure
 
@@ -77,12 +77,12 @@ bash scripts/stage1.sh
 | `tracks_part` | AVRO + Snappy | `year` | `id` × 11 | catalogue-style table for content joins |
 | `interactions_part` | AVRO + Snappy | `interaction_flag` | `user_id` × 11 | fact table; partition key is the ML target |
 
-**EDA insights produced (each one is wired to a Stage 3 modelling decision):**
-1. `q1` — class balance of `interaction_flag` → class weights & metric choice (PR-AUC vs ROC-AUC).
+**EDA insights produced (used to motivate Stage 3 modelling decisions):**
+1. `q1` — class balance of `interaction_flag` → class weights & PR-AUC metric choice.
 2. `q2` — distribution of positive interactions per (user, artist) pair → whether artist features / embeddings will pay off.
 3. `q3` — average audio features for positive vs negative interactions → which audio features actually discriminate the target.
 4. `q4` — positive-rate vs track popularity bucket → popularity bias and cold-start severity.
-5. `q5` — user-activity power law → per-user train/test split and activity-stratified evaluation.
+5. `q5` — user-activity power law → user-level split with temporal context.
 
 **HDFS layout after Stage 2:**
 ```
@@ -97,8 +97,47 @@ project/output/qN/             # CSV part-files, fetched into local output/qN.cs
 
 See `STAGE2_INSTRUCTIONS.md` for a step-by-step run guide and the Apache Superset checklist (the only manual part).
 
-### Stage 3: Data Analysis
-*TODO*
+### Stage 3: Predictive Data Analytics
+
+**Scripts:** `scripts/stage3.sh` → `scripts/model.py` via `spark-submit --master yarn`
+
+**What it does:**
+1. Reads Stage 2 Hive tables (`tracks_part`, `interactions_part`) as Spark DataFrames
+2. Splits users into disjoint train, validation, and test groups
+3. Uses each user's early interactions as context and later interactions as
+   supervised target rows
+4. Builds a feature pipeline over track audio features, categorical metadata,
+   artist text, timestamp-derived cyclic features, and last-50 context history
+5. Trains two Spark ML classifiers: Logistic Regression and Random Forest
+6. Tunes each model with Spark CrossValidator and grid search on train users
+7. Selects a threshold on validation-user target rows
+8. Reports PR-AUC, binary threshold metrics, and user-level ranking metrics
+9. Saves models, train/test data, predictions, soft scores, and evaluation output
+
+**Target and score:**
+- `label` = `interaction_flag` (`0`/`1`)
+- `rel_score` = positive-class probability `P(interaction_flag = 1)`,
+  used as the soft score for held-out target rows
+- Missing user-track pairs are not treated as implicit negative labels
+- The split is user-disjoint: train, validation, and test users do not overlap
+- Inside each user, early rows are context and later rows are prediction targets
+- This evaluates unseen users after observing their early interaction context
+- Validation/test history features use only early context rows, not target labels
+- Target rows exclude tracks already seen in the same user's context
+- History features are bounded last-50 statistical aggregates
+- Final metrics are reported only on held-out target rows from test users
+- Ranking metrics are `Precision@100`, `Recall@100`, `NDCG@100`, and `MRR@100`
+- `evaluation.csv` also reports test users, target rows, and true interactions
+
+**Outputs:**
+- `data/train.json`, `data/test.json`
+- `models/model1/`, `models/model2/`
+- `output/model1_predictions.csv`, `output/model2_predictions.csv` (`label,prediction`)
+- `output/model1_scores.csv`, `output/model2_scores.csv`
+  (`user_id,item_id,label,prediction,rel_score`)
+- `output/evaluation.csv`
+
+Stage 3 must run on the cluster with Yarn; do not run it in Spark local mode.
 
 ### Stage 4: Presentation
 *TODO*

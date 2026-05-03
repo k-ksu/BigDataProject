@@ -1,6 +1,9 @@
+"""run stage 2 hive scripts through hivejdbc."""
+
 import logging
 import os
 import sys
+
 from hivejdbc import connect
 
 HIVE_HOST = "hadoop-03.uni.innopolis.ru"
@@ -15,15 +18,12 @@ EDA_FILES = [os.path.join(SQL_DIR, f"q{i}.hql") for i in range(1, 6)]
 
 SECRETS = ["secrets/.hive.pass", "secrets/.psql.pass"]
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
 
 def read_password():
+    """read the hive password from local secrets."""
     for path in SECRETS:
         if os.path.isfile(path):
             with open(path, "r", encoding="utf-8") as fh:
@@ -35,6 +35,7 @@ def read_password():
 
 
 def split_statements(sql_text):
+    """split hql text into executable statements."""
     stmts, buf, in_str = [], [], False
     for raw in sql_text.splitlines():
         line = raw.split("--", 1)[0]
@@ -58,6 +59,7 @@ def split_statements(sql_text):
 
 
 def run_script(cur, path):
+    """run one hql script through the open cursor."""
     log.info("Running %s", path)
     with open(path, "r", encoding="utf-8") as fh:
         statements = split_statements(fh.read())
@@ -72,6 +74,7 @@ def run_script(cur, path):
 
 
 def main():
+    """run the stage 2 hive build and eda scripts."""
     password = read_password()
     log.info("Connecting to %s:%s as %s", HIVE_HOST, HIVE_PORT, HIVE_USER)
     conn = connect(
