@@ -63,8 +63,39 @@ bash scripts/stage1.sh
 
 **HDFS location:** `/user/team11/project/warehouse`
 
-### Stage 2: Data Storage/Preparation
-*TODO*
+### Stage 2: Data Storage / Preparation / EDA
+
+**Scripts:** `scripts/stage2.sh` (primary, beeline-driven) — optional Python alt: `scripts/build_hive.py` (hivejdbc).
+
+**SQL artefacts:**
+- `sql/db.hql` — creates Hive DB `team11_projectdb` at `project/hive/warehouse`, defines external AVRO tables on the Sqoop output, then builds optimised tables and drops the un-optimised originals.
+- `sql/q1.hql` … `sql/q5.hql` — five EDA insights, each materialised as a `qN_results` external table **and** exported to `output/qN.csv`.
+
+**Hive tables:**
+| Table | Storage | Partitioning | Bucketing | Notes |
+|---|---|---|---|---|
+| `tracks_part` | AVRO + Snappy | `year` | `id` × 11 | catalogue-style table for content joins |
+| `interactions_part` | AVRO + Snappy | `interaction_flag` | `user_id` × 11 | fact table; partition key is the ML target |
+
+**EDA insights produced (each one is wired to a Stage 3 modelling decision):**
+1. `q1` — class balance of `interaction_flag` → class weights & metric choice (PR-AUC vs ROC-AUC).
+2. `q2` — distribution of positive interactions per (user, artist) pair → whether artist features / embeddings will pay off.
+3. `q3` — average audio features for positive vs negative interactions → which audio features actually discriminate the target.
+4. `q4` — positive-rate vs track popularity bucket → popularity bias and cold-start severity.
+5. `q5` — user-activity power law → per-user train/test split and activity-stratified evaluation.
+
+**HDFS layout after Stage 2:**
+```
+project/warehouse/avsc/        # *.avsc schemas pushed from output/
+project/warehouse/{tracks,interactions}/   # raw Sqoop AVRO (cold archive, no Hive metadata anymore)
+project/hive/warehouse/        # Hive-managed DB folder
+    tracks_part/year=YYYY/...
+    interactions_part/interaction_flag=N/...
+    qN_results/...
+project/output/qN/             # CSV part-files, fetched into local output/qN.csv by stage2.sh
+```
+
+See `STAGE2_INSTRUCTIONS.md` for a step-by-step run guide and the Apache Superset checklist (the only manual part).
 
 ### Stage 3: Data Analysis
 *TODO*
