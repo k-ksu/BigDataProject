@@ -16,6 +16,28 @@ if ! command -v hdfs >/dev/null 2>&1; then
     exit 1
 fi
 
+if [ -z "${HADOOP_CONF_DIR:-}" ] && [ -z "${YARN_CONF_DIR:-}" ]; then
+    for conf_dir in \
+        /etc/hadoop/conf \
+        /etc/hadoop/conf.cloudera.yarn \
+        /usr/local/hadoop/etc/hadoop \
+        "${HADOOP_HOME:-}/etc/hadoop"
+    do
+        if [ -f "${conf_dir}/yarn-site.xml" ]; then
+            export HADOOP_CONF_DIR="${conf_dir}"
+            export YARN_CONF_DIR="${conf_dir}"
+            break
+        fi
+    done
+fi
+
+if [ -z "${HADOOP_CONF_DIR:-}" ] && [ -z "${YARN_CONF_DIR:-}" ]; then
+    echo "ERROR: HADOOP_CONF_DIR or YARN_CONF_DIR must point to Hadoop config."
+    echo "Try: export HADOOP_CONF_DIR=/etc/hadoop/conf"
+    echo "     export YARN_CONF_DIR=\$HADOOP_CONF_DIR"
+    exit 1
+fi
+
 mkdir -p data models output
 
 echo ""
