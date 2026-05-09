@@ -396,9 +396,8 @@ def sample_unseen_tracks(users, track_index, train, validation, test):
     )
     candidates = offsets.withColumn(
         "track_pos",
-        sql_fn.pmod(
-            sql_fn.xxhash64("user_id", "candidate_offset", sql_fn.lit(SEED)),
-            sql_fn.lit(track_count),
+        sql_fn.expr(
+            f"pmod(xxhash64(user_id, candidate_offset, {SEED}), {track_count})"
         ).cast("long"),
     ).join(track_index, on="track_pos", how="inner")
     observed = (
