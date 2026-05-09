@@ -112,8 +112,9 @@ See `STAGE2_INSTRUCTIONS.md` for a step-by-step run guide and the Apache Superse
 7. Trains ALS as an additional collaborative filtering recommender
 8. Builds a hybrid score from ALS and `model1`
 9. Selects thresholds and hybrid alpha on validation rows
-10. Reports PR-AUC, binary threshold metrics, and user-level ranking metrics
-11. Saves models, train/test data, predictions, soft scores, and evaluation output
+10. Adds sampled unseen tracks to test ranking candidates
+11. Reports PR-AUC, binary threshold metrics, and user-level ranking metrics
+12. Saves models, train/test data, predictions, soft scores, and evaluation output
 
 **Target and score:**
 - `label` = `interaction_flag` (`0`/`1`)
@@ -124,9 +125,11 @@ See `STAGE2_INSTRUCTIONS.md` for a step-by-step run guide and the Apache Superse
 - Validation/test history features use only train-period rows, not future labels
 - Target rows exclude tracks already seen earlier by the same user
 - History features are bounded last-50 statistical aggregates
-- Final metrics are reported only on held-out test rows
-- Ranking metrics are `Precision@100`, `Recall@100`, `NDCG@100`, and `MRR@100`
-- `evaluation.csv` also reports test users, target rows, and true interactions
+- Threshold metrics are reported on labeled held-out test rows
+- Ranking metrics use labeled test rows plus sampled unseen candidate tracks
+- Ranking metrics are reported at `10` and `100`
+- `evaluation.csv` also reports test users, target rows, true interactions,
+  ranking rows, and sampled candidate count
 
 **Outputs:**
 - `data/train.json`, `data/test.json`
