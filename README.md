@@ -3,7 +3,7 @@
 **Course:** Big Data — Innopolis University  
 **Team:** team11 (4 members)  
 **Dataset:** [Music Interaction](https://www.kaggle.com/datasets/huynguyen1902/music-interaction/data) (~1.3 GB)  
-**ML Task:** Soft binary classification (`interaction_flag`) — primary metric: AUC PR
+**ML Task:** Recommendation System with soft relevance score (`rel_score`)
 
 ## Repository Structure
 
@@ -103,37 +103,39 @@ See `STAGE2_INSTRUCTIONS.md` for a step-by-step run guide and the Apache Superse
 
 **What it does:**
 1. Reads Stage 2 Hive tables (`tracks_part`, `interactions_part`) as Spark DataFrames
-2. Splits users into disjoint train, validation, and test groups
-3. Uses each user's early interactions as context and later interactions as
-   supervised target rows
+2. Splits each user's history into temporal train, validation, and test rows
+3. Uses train-period interactions as the known past for future scoring
 4. Builds a feature pipeline over track audio features, categorical metadata,
-   artist text, timestamp-derived cyclic features, and last-50 context history
+   artist text, timestamp-derived cyclic features, and last-50 history features
 5. Trains two Spark ML classifiers: Logistic Regression and Random Forest
-6. Tunes each model with Spark CrossValidator and grid search on train users
-7. Selects a threshold on validation-user target rows
-8. Reports PR-AUC, binary threshold metrics, and user-level ranking metrics
-9. Saves models, train/test data, predictions, soft scores, and evaluation output
+6. Tunes each classifier with Spark CrossValidator and 6 grid combinations
+7. Trains ALS as an additional collaborative filtering recommender
+8. Builds a hybrid score from ALS and `model1`
+9. Selects thresholds and hybrid alpha on validation rows
+10. Reports PR-AUC, binary threshold metrics, and user-level ranking metrics
+11. Saves models, train/test data, predictions, soft scores, and evaluation output
 
 **Target and score:**
 - `label` = `interaction_flag` (`0`/`1`)
-- `rel_score` = positive-class probability `P(interaction_flag = 1)`,
-  used as the soft score for held-out target rows
+- `rel_score` = soft relevance score in `[0, 1]`
 - Missing user-track pairs are not treated as implicit negative labels
-- The split is user-disjoint: train, validation, and test users do not overlap
-- Inside each user, early rows are context and later rows are prediction targets
-- This evaluates unseen users after observing their early interaction context
-- Validation/test history features use only early context rows, not target labels
-- Target rows exclude tracks already seen in the same user's context
+- The split is temporal inside each user: past rows train, later rows validate/test
+- This evaluates future preference prediction after observing user history
+- Validation/test history features use only train-period rows, not future labels
+- Target rows exclude tracks already seen earlier by the same user
 - History features are bounded last-50 statistical aggregates
-- Final metrics are reported only on held-out target rows from test users
+- Final metrics are reported only on held-out test rows
 - Ranking metrics are `Precision@100`, `Recall@100`, `NDCG@100`, and `MRR@100`
 - `evaluation.csv` also reports test users, target rows, and true interactions
 
 **Outputs:**
 - `data/train.json`, `data/test.json`
-- `models/model1/`, `models/model2/`
-- `output/model1_predictions.csv`, `output/model2_predictions.csv` (`label,prediction`)
-- `output/model1_scores.csv`, `output/model2_scores.csv`
+- `models/model1/`, `models/model2/`, `models/model3/`
+- `output/model1_predictions.csv`, `output/model2_predictions.csv`,
+  `output/model3_predictions.csv`, `output/hybrid_predictions.csv`
+  (`label,prediction`)
+- `output/model1_scores.csv`, `output/model2_scores.csv`,
+  `output/model3_scores.csv`, `output/hybrid_scores.csv`
   (`user_id,item_id,label,prediction,rel_score`)
 - `output/evaluation.csv`
 

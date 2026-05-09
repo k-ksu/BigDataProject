@@ -18,6 +18,7 @@ from pyspark.ml.feature import (
     VectorAssembler,
 )
 from pyspark.ml.functions import vector_to_array
+from pyspark.ml.recommendation import ALS
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as sql_fn
@@ -28,12 +29,16 @@ DATABASE = f"{TEAM}_projectdb"
 WAREHOUSE = "project/hive/warehouse"
 METASTORE_URI = "thrift://hadoop-02.uni.innopolis.ru:9883"
 SEED = 42
-TRAIN_USER_PERCENT = 70
-VALIDATION_USER_PERCENT = 85
-CONTEXT_FRACTION = 0.7
+TRAIN_ROW_FRACTION = 0.70
+VALIDATION_ROW_FRACTION = 0.85
+MIN_USER_ROWS = 4
 HISTORY_LIMIT = 50
 CV_FOLDS = 3
 RANKING_K = 100
+ALS_RANKS = [8, 16, 32]
+ALS_REG_PARAMS = [0.05, 0.10]
+HYBRID_ALPHAS = [0.25, 0.50, 0.75]
+ALS_SCORE_FLOOR = 0.20
 
 NUMERIC_COLS = [
     "track_number",
@@ -91,7 +96,6 @@ def create_spark():
 
 def prepare_dataset(spark):
     """read stage 2 hive tables and build ml rows."""
-    # stage 3 starts from hive, not from local csv files.
     interactions = spark.table(f"{DATABASE}.interactions_part").select(
         sql_fn.col("id").alias("interaction_id"),
         "user_id",
@@ -124,113 +128,136 @@ def prepare_dataset(spark):
         sql_fn.coalesce(sql_fn.col("artists"), sql_fn.lit("")),
     )
 
-    split_interactions = assign_user_split(interactions)
-    context, targets = split_context_targets(split_interactions)
-    return build_target_rows(targets, context, tracks)
+    rows = interactions.join(tracks, on="item_id", how="inner")
+    rows = assign_temporal_split(rows)
+    rows = with_track_time_features(rows)
+    rows = add_history_features(rows)
+    rows = rows.filter(sql_fn.col("prior_item_count") == 0)
+    return rows.withColumn(
+        "cv_fold",
+        sql_fn.expr(f"pmod(hash(user_id), {CV_FOLDS})").cast("int"),
+    ).drop("rn", "n_user_rows", "train_cutoff", "validation_cutoff", "prior_item_count")
 
 
-def assign_user_split(interactions):
-    """assign each user to one deterministic split."""
-    users = interactions.select("user_id").distinct().withColumn(
-        "user_bucket",
-        sql_fn.expr("pmod(hash(user_id), 100)"),
-    )
-    users = users.withColumn(
-        "split_group",
-        sql_fn.when(sql_fn.col("user_bucket") < TRAIN_USER_PERCENT, "train")
-        .when(sql_fn.col("user_bucket") < VALIDATION_USER_PERCENT, "validation")
-        .otherwise("test"),
-    )
-    return interactions.join(users.select("user_id", "split_group"), on="user_id")
-
-
-def split_context_targets(interactions):
-    """mark early rows as context and later rows as targets."""
+def assign_temporal_split(rows):
+    """split each user's history into train, validation, and test periods."""
     user_time = Window.partitionBy("user_id").orderBy("ts", "interaction_id", "item_id")
     user_rows = Window.partitionBy("user_id")
+    user_item_time = Window.partitionBy("user_id", "item_id").orderBy(
+        "ts",
+        "interaction_id",
+        "item_id",
+    )
 
     ranked = (
-        interactions.withColumn("rn", sql_fn.row_number().over(user_time))
+        rows.withColumn("rn", sql_fn.row_number().over(user_time))
         .withColumn("n_user_rows", sql_fn.count("*").over(user_rows).cast("int"))
-        .filter(sql_fn.col("n_user_rows") >= 2)
+        .filter(sql_fn.col("n_user_rows") >= MIN_USER_ROWS)
     )
-    cutoff = sql_fn.least(
+    train_cutoff = sql_fn.least(
         sql_fn.greatest(
-            sql_fn.floor(sql_fn.col("n_user_rows") * CONTEXT_FRACTION).cast("int"),
+            sql_fn.floor(sql_fn.col("n_user_rows") * TRAIN_ROW_FRACTION).cast("int"),
             sql_fn.lit(1),
+        ),
+        sql_fn.col("n_user_rows") - sql_fn.lit(2),
+    )
+    validation_cutoff = sql_fn.least(
+        sql_fn.greatest(
+            sql_fn.floor(sql_fn.col("n_user_rows") * VALIDATION_ROW_FRACTION).cast("int"),
+            train_cutoff + sql_fn.lit(1),
         ),
         sql_fn.col("n_user_rows") - sql_fn.lit(1),
     )
-    marked = ranked.withColumn("context_cutoff", cutoff)
-    context = marked.filter(sql_fn.col("rn") <= sql_fn.col("context_cutoff"))
-    targets = marked.filter(sql_fn.col("rn") > sql_fn.col("context_cutoff"))
-    return context, targets
-
-
-def build_target_rows(targets, context, tracks):
-    """build target rows with context-only history features."""
-    target_candidates = remove_seen_context_items(targets, context)
-    latest_context = latest_context_rows(context, tracks)
-    user_history, user_artist_history = context_history_features(latest_context)
-
-    target_rows = target_candidates.join(tracks, on="item_id", how="inner")
-    target_rows = with_track_time_features(target_rows)
-    target_rows = (
-        target_rows.join(user_history, on="user_id", how="left")
-        .join(user_artist_history, on=["user_id", "artists_clean"], how="left")
+    marked = (
+        ranked.withColumn("train_cutoff", train_cutoff)
+        .withColumn("validation_cutoff", validation_cutoff)
         .withColumn(
-            "cv_fold",
-            sql_fn.expr(f"pmod(hash(user_id), {CV_FOLDS})").cast("int"),
+            "split_group",
+            sql_fn.when(sql_fn.col("rn") <= sql_fn.col("train_cutoff"), "train")
+            .when(sql_fn.col("rn") <= sql_fn.col("validation_cutoff"), "validation")
+            .otherwise("test"),
+        )
+        .withColumn(
+            "prior_item_count",
+            sql_fn.count("*").over(
+                user_item_time.rowsBetween(Window.unboundedPreceding, -1)
+            ),
         )
     )
+    return marked
 
-    # validation and test targets see only their early context rows.
-    for column in [
-        "prior_user_interactions",
-        "prior_user_positives",
+
+def add_history_features(rows):
+    """add last-50 history features without using validation or test labels."""
+    train = rows.filter(sql_fn.col("split_group") == "train")
+    future = rows.filter(sql_fn.col("split_group") != "train")
+    train_with_history = rolling_train_history(train)
+    user_history, user_artist_history = latest_train_history(train)
+    future_with_history = (
+        future.join(user_history, on="user_id", how="left")
+        .join(user_artist_history, on=["user_id", "artists_clean"], how="left")
+        .select(train_with_history.columns)
+    )
+    return fill_history_defaults(train_with_history.unionByName(future_with_history))
+
+
+def rolling_train_history(train):
+    """build prior-only history features for train rows."""
+    user_history = Window.partitionBy("user_id").orderBy("rn").rowsBetween(
+        -HISTORY_LIMIT,
+        -1,
+    )
+    user_artist_history = Window.partitionBy("user_id", "artists_clean").orderBy(
+        "rn"
+    ).rowsBetween(
+        -HISTORY_LIMIT,
+        -1,
+    )
+    rows = (
+        train.withColumn(
+            "prior_user_interactions",
+            sql_fn.count("label").over(user_history).cast("double"),
+        )
+        .withColumn("prior_user_positives", sql_fn.sum("label").over(user_history))
+        .withColumn(
+            "prior_user_artist_interactions",
+            sql_fn.count("label").over(user_artist_history).cast("double"),
+        )
+        .withColumn(
+            "prior_user_artist_positives",
+            sql_fn.sum("label").over(user_artist_history),
+        )
+    )
+    return rows.withColumn(
         "prior_user_positive_share",
-        "prior_user_artist_interactions",
-        "prior_user_artist_positives",
+        sql_fn.when(
+            sql_fn.col("prior_user_interactions") > 0,
+            sql_fn.col("prior_user_positives") / sql_fn.col("prior_user_interactions"),
+        ),
+    ).withColumn(
         "prior_user_artist_positive_share",
-    ]:
-        target_rows = target_rows.withColumn(
-            column,
-            sql_fn.coalesce(sql_fn.col(column), sql_fn.lit(0.0)),
-        )
-
-    return target_rows.drop("rn", "n_user_rows", "context_cutoff")
-
-
-def remove_seen_context_items(targets, context):
-    """drop target items already present in user context."""
-    seen_items = context.select("user_id", "item_id").distinct()
-    # held-out ranking should not recommend tracks already seen in context.
-    return targets.join(seen_items, on=["user_id", "item_id"], how="left_anti")
-
-
-def latest_context_rows(context, tracks):
-    """keep the latest context rows for history aggregates."""
-    context_tracks = context.join(
-        tracks.select("item_id", "artists_clean"),
-        on="item_id",
-        how="inner",
+        sql_fn.when(
+            sql_fn.col("prior_user_artist_interactions") > 0,
+            sql_fn.col("prior_user_artist_positives")
+            / sql_fn.col("prior_user_artist_interactions"),
+        ),
     )
-    context_order = Window.partitionBy("user_id").orderBy(
+
+
+def latest_train_history(train):
+    """aggregate recent train rows for validation and test rows."""
+    train_order = Window.partitionBy("user_id").orderBy(
         sql_fn.col("rn").desc(),
         sql_fn.col("interaction_id").desc(),
     )
     # last 50 keeps recent taste and avoids unbounded history features.
-    return (
-        context_tracks.withColumn("context_rank", sql_fn.row_number().over(context_order))
-        .filter(sql_fn.col("context_rank") <= HISTORY_LIMIT)
+    latest_train = (
+        train.withColumn("history_rank", sql_fn.row_number().over(train_order))
+        .filter(sql_fn.col("history_rank") <= HISTORY_LIMIT)
         .select("user_id", "artists_clean", "label")
     )
-
-
-def context_history_features(latest_context):
-    """aggregate recent context rows into history features."""
     user_history = (
-        latest_context.groupBy("user_id")
+        latest_train.groupBy("user_id")
         .agg(
             sql_fn.count("*").cast("double").alias("prior_user_interactions"),
             sql_fn.sum("label").alias("prior_user_positives"),
@@ -241,7 +268,7 @@ def context_history_features(latest_context):
         )
     )
     user_artist_history = (
-        latest_context.groupBy("user_id", "artists_clean")
+        latest_train.groupBy("user_id", "artists_clean")
         .agg(
             sql_fn.count("*").cast("double").alias("prior_user_artist_interactions"),
             sql_fn.sum("label").alias("prior_user_artist_positives"),
@@ -253,6 +280,20 @@ def context_history_features(latest_context):
         )
     )
     return user_history, user_artist_history
+
+
+def fill_history_defaults(rows):
+    """fill missing history values with zeros."""
+    for column in [
+        "prior_user_interactions",
+        "prior_user_positives",
+        "prior_user_positive_share",
+        "prior_user_artist_interactions",
+        "prior_user_artist_positives",
+        "prior_user_artist_positive_share",
+    ]:
+        rows = rows.withColumn(column, sql_fn.coalesce(sql_fn.col(column), sql_fn.lit(0.0)))
+    return rows
 
 
 def with_track_time_features(data):
@@ -290,7 +331,7 @@ def with_track_time_features(data):
 
 
 def split_dataset(data):
-    """return rows from disjoint train, validation, and test users."""
+    """return temporal train, validation, and test rows."""
     train = data.filter(sql_fn.col("split_group") == "train").drop("split_group")
     validation = data.filter(sql_fn.col("split_group") == "validation").drop("split_group")
     test = data.filter(sql_fn.col("split_group") == "test").drop("split_group")
@@ -372,7 +413,7 @@ def train_model(name, classifier, grid, train, validation):
         seed=SEED,
     )
 
-    # the assignment requires cross validation; folds are user-disjoint.
+    # the assignment requires cross validation; each user stays in one fold.
     log.info("Training %s", name)
     model = validator.fit(train)
     validation_scores = with_rel_score(model.transform(validation))
@@ -562,20 +603,20 @@ def best_params(model, names):
     return "; ".join(sorted(params))
 
 
-def evaluate_model(name, model, threshold, test, param_names):
-    """evaluate the tuned model on test rows."""
-    scored = with_rel_score(model.transform(test)).persist(StorageLevel.MEMORY_AND_DISK)
+def evaluate_scored(name, scored, threshold, raw_prediction_col, params_text):
+    """evaluate scored rows on the test split."""
+    scored = scored.persist(StorageLevel.MEMORY_AND_DISK)
     classified = with_threshold_prediction(scored, threshold).persist(
         StorageLevel.MEMORY_AND_DISK
     )
     evaluator_pr = BinaryClassificationEvaluator(
         labelCol="label",
-        rawPredictionCol="rawPrediction",
+        rawPredictionCol=raw_prediction_col,
         metricName="areaUnderPR",
     )
     evaluator_roc = BinaryClassificationEvaluator(
         labelCol="label",
-        rawPredictionCol="rawPrediction",
+        rawPredictionCol=raw_prediction_col,
         metricName="areaUnderROC",
     )
     metrics = threshold_metrics(scored, threshold)
@@ -584,9 +625,153 @@ def evaluate_model(name, model, threshold, test, param_names):
     metrics.update(target_set_metrics(scored))
     metrics.update(ranking_metrics(scored))
     metrics["threshold"] = threshold
-    metrics["best_params"] = best_params(model, param_names)
+    metrics["best_params"] = params_text
     log.info("%s metrics: %s", name, json.dumps(metrics, sort_keys=True))
     return classified, metrics
+
+
+def evaluate_model(name, model, threshold, test, param_names):
+    """evaluate the tuned spark ml classifier on test rows."""
+    scored = with_rel_score(model.transform(test))
+    return evaluate_scored(
+        name,
+        scored,
+        threshold,
+        "rawPrediction",
+        best_params(model, param_names),
+    )
+
+
+def index_als_data(train, validation, test):
+    """create integer ids for als from train ids only."""
+    indexer = Pipeline(
+        stages=[
+            StringIndexer(inputCol="user_id", outputCol="user_index", handleInvalid="keep"),
+            StringIndexer(inputCol="item_id", outputCol="item_index", handleInvalid="keep"),
+        ]
+    )
+    index_model = indexer.fit(train)
+
+    def transform(dataframe):
+        return (
+            index_model.transform(dataframe)
+            .withColumn("user_index", sql_fn.col("user_index").cast("int"))
+            .withColumn("item_index", sql_fn.col("item_index").cast("int"))
+        )
+
+    return transform(train), transform(validation), transform(test)
+
+
+def score_als(model, data):
+    """turn als predictions into rel_score."""
+    scored = model.transform(data)
+    has_prediction = ~(sql_fn.col("als_prediction").isNull() | sql_fn.isnan("als_prediction"))
+    raw_score = sql_fn.when(has_prediction, sql_fn.col("als_prediction")).otherwise(
+        sql_fn.lit(0.0)
+    )
+    raw_rel_score = sql_fn.lit(1.0) / (
+        sql_fn.lit(1.0) + sql_fn.exp(-sql_fn.col("als_raw_score"))
+    )
+    als_rel_score = sql_fn.greatest(raw_rel_score, sql_fn.lit(ALS_SCORE_FLOOR))
+    return (
+        scored.withColumn("als_raw_score", raw_score)
+        .withColumn("rel_score", sql_fn.when(has_prediction, als_rel_score).otherwise(
+            sql_fn.lit(ALS_SCORE_FLOOR)
+        ))
+        .drop("als_prediction")
+    )
+
+
+def validation_auc(scored):
+    """measure validation ranking quality."""
+    evaluator = BinaryClassificationEvaluator(
+        labelCol="label",
+        rawPredictionCol="rel_score",
+        metricName="areaUnderPR",
+    )
+    return evaluator.evaluate(scored)
+
+
+def train_als_model(train, validation):
+    """fit als grid and select the best validation model."""
+    ratings = train.select(
+        "user_index",
+        "item_index",
+        sql_fn.col("label").alias("rating"),
+    )
+    best_model = None
+    best_params_text = ""
+    best_metric = -1.0
+
+    for rank in ALS_RANKS:
+        for reg_param in ALS_REG_PARAMS:
+            als = ALS(
+                userCol="user_index",
+                itemCol="item_index",
+                ratingCol="rating",
+                predictionCol="als_prediction",
+                rank=rank,
+                regParam=reg_param,
+                maxIter=10,
+                nonnegative=True,
+                coldStartStrategy="nan",
+                seed=SEED,
+            )
+            model = als.fit(ratings)
+            validation_scores = score_als(model, validation)
+            metric = validation_auc(validation_scores)
+            log.info(
+                "model3 candidate rank=%s regParam=%s areaUnderPR=%.6f",
+                rank,
+                reg_param,
+                metric,
+            )
+            if metric > best_metric:
+                best_model = model
+                best_metric = metric
+                best_params_text = f"rank={rank}; regParam={reg_param}"
+
+    validation_scores = score_als(best_model, validation)
+    threshold = select_threshold(validation_scores)
+    log.info("model3 selected threshold: %.2f", threshold)
+    return best_model, threshold, best_params_text
+
+
+def hybrid_scores(base_scores, als_scores, alpha):
+    """combine model1 probability with als relevance."""
+    base = base_scores.select(
+        "user_id", "item_id", "label", sql_fn.col("rel_score").alias("base_rel_score")
+    )
+    als = als_scores.select(
+        "user_id", "item_id", sql_fn.col("rel_score").alias("als_rel_score")
+    )
+    return (
+        base.join(als, on=["user_id", "item_id"], how="left")
+        .withColumn(
+            "als_rel_score",
+            sql_fn.coalesce(sql_fn.col("als_rel_score"), sql_fn.lit(ALS_SCORE_FLOOR)),
+        )
+        .withColumn(
+            "rel_score",
+            sql_fn.lit(alpha) * sql_fn.col("als_rel_score")
+            + sql_fn.lit(1.0 - alpha) * sql_fn.col("base_rel_score"),
+        )
+        .select("user_id", "item_id", "label", "rel_score")
+    )
+
+
+def select_hybrid_alpha(base_scores, als_scores):
+    """select hybrid alpha on validation rows."""
+    best_alpha = HYBRID_ALPHAS[0]
+    best_metric = -1.0
+    for alpha in HYBRID_ALPHAS:
+        scored = hybrid_scores(base_scores, als_scores, alpha)
+        metric = validation_auc(scored)
+        log.info("hybrid candidate alpha=%.2f areaUnderPR=%.6f", alpha, metric)
+        if metric > best_metric:
+            best_alpha = alpha
+            best_metric = metric
+    return best_alpha
 
 
 def model_specs():
@@ -599,7 +784,7 @@ def model_specs():
     )
     logistic_grid = (
         ParamGridBuilder()
-        .addGrid(logistic_regression.regParam, [0.01, 0.1])
+        .addGrid(logistic_regression.regParam, [0.001, 0.01, 0.1])
         .addGrid(logistic_regression.elasticNetParam, [0.0, 0.5])
         .build()
     )
@@ -612,7 +797,7 @@ def model_specs():
     )
     forest_grid = (
         ParamGridBuilder()
-        .addGrid(random_forest.numTrees, [50, 100])
+        .addGrid(random_forest.numTrees, [50, 100, 150])
         .addGrid(random_forest.maxDepth, [5, 8])
         .build()
     )
@@ -635,22 +820,22 @@ def write_json(dataframe, path):
 
 def save_outputs(spark, model_results, train, test):
     """persist assignment artifacts and soft-score outputs."""
-    first_model = model_results[0]["model"]
-    # the assignment wants train/test after feature extraction, not raw rows.
-    train_features = first_model.bestModel.transform(train).select("features", "label")
-    test_features = first_model.bestModel.transform(test).select("features", "label")
+    first_model = model_results[0]["model_to_save"]
+    train_features = first_model.transform(train).select("features", "label")
+    test_features = first_model.transform(test).select("features", "label")
     write_json(train_features, "project/data/train")
     write_json(test_features, "project/data/test")
 
     evaluation_rows = []
     for result in model_results:
         name = result["name"]
-        model = result["model"]
+        model_to_save = result["model_to_save"]
         predictions = result["predictions"]
         metrics = result["metrics"]
 
         # save the full fitted pipeline so preprocessing is kept with the model.
-        model.bestModel.write().overwrite().save(f"project/models/{name}")
+        if model_to_save is not None:
+            model_to_save.write().overwrite().save(f"project/models/{name}")
         write_single_csv(
             predictions.select("label", "prediction"),
             f"project/output/{name}_predictions",
@@ -704,6 +889,80 @@ def save_outputs(spark, model_results, train, test):
     write_single_csv(evaluation, "project/output/evaluation")
 
 
+def train_assignment_models(train, validation, test):
+    """train model1 and model2 required by the assignment."""
+    results = []
+    model1_validation_scores = None
+    model1_test_scores = None
+    for name, classifier, grid, param_names in model_specs():
+        model, threshold = train_model(name, classifier, grid, train, validation)
+        predictions, metrics = evaluate_model(name, model, threshold, test, param_names)
+        if name == "model1":
+            model1_validation_scores = (
+                with_rel_score(model.transform(validation))
+                .select("user_id", "item_id", "label", "rel_score")
+                .persist(StorageLevel.MEMORY_AND_DISK)
+            )
+            model1_test_scores = predictions.select("user_id", "item_id", "label", "rel_score")
+        results.append(
+            {
+                "name": name,
+                "model_to_save": model.bestModel,
+                "predictions": predictions,
+                "metrics": metrics,
+            }
+        )
+    return results, model1_validation_scores, model1_test_scores
+
+
+def train_recommender_extensions(
+    train, validation, test, model1_validation_scores, model1_test_scores
+):
+    """train als and the hybrid extension."""
+    als_data = index_als_data(train, validation, test)
+    for dataframe in als_data:
+        dataframe.persist(StorageLevel.MEMORY_AND_DISK)
+
+    als_training = train_als_model(als_data[0], als_data[1])
+    als_validation_scores = (
+        score_als(als_training[0], als_data[1])
+        .select("user_id", "item_id", "label", "rel_score")
+        .persist(StorageLevel.MEMORY_AND_DISK)
+    )
+    als_evaluation = evaluate_scored(
+        "model3",
+        score_als(als_training[0], als_data[2]),
+        als_training[1],
+        "rel_score",
+        als_training[2],
+    )
+    alpha = select_hybrid_alpha(model1_validation_scores, als_validation_scores)
+    hybrid_threshold = select_threshold(
+        hybrid_scores(model1_validation_scores, als_validation_scores, alpha)
+    )
+    hybrid_evaluation = evaluate_scored(
+        "hybrid",
+        hybrid_scores(model1_test_scores, als_evaluation[0], alpha),
+        hybrid_threshold,
+        "rel_score",
+        f"alpha={alpha}; base=model1; als=model3",
+    )
+    return [
+        {
+            "name": "model3",
+            "model_to_save": als_training[0],
+            "predictions": als_evaluation[0],
+            "metrics": als_evaluation[1],
+        },
+        {
+            "name": "hybrid",
+            "model_to_save": None,
+            "predictions": hybrid_evaluation[0],
+            "metrics": hybrid_evaluation[1],
+        },
+    ]
+
+
 def main():
     """run the stage 3 training and evaluation pipeline."""
     spark = create_spark()
@@ -720,18 +979,14 @@ def main():
         test.count(),
     )
 
-    results = []
-    for name, classifier, grid, param_names in model_specs():
-        model, threshold = train_model(name, classifier, grid, train, validation)
-        predictions, metrics = evaluate_model(name, model, threshold, test, param_names)
-        results.append(
-            {
-                "name": name,
-                "model": model,
-                "predictions": predictions,
-                "metrics": metrics,
-            }
+    results, model1_validation_scores, model1_test_scores = train_assignment_models(
+        train, validation, test
+    )
+    results.extend(
+        train_recommender_extensions(
+            train, validation, test, model1_validation_scores, model1_test_scores
         )
+    )
 
     save_outputs(spark, results, train, test)
     spark.stop()

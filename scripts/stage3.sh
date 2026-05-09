@@ -107,22 +107,32 @@ fetch_file "project/data/train" "data/train.json"
 fetch_file "project/data/test" "data/test.json"
 fetch_file "project/output/model1_predictions" "output/model1_predictions.csv"
 fetch_file "project/output/model2_predictions" "output/model2_predictions.csv"
+fetch_file "project/output/model3_predictions" "output/model3_predictions.csv"
+fetch_file "project/output/hybrid_predictions" "output/hybrid_predictions.csv"
 fetch_file "project/output/model1_scores" "output/model1_scores.csv"
 fetch_file "project/output/model2_scores" "output/model2_scores.csv"
+fetch_file "project/output/model3_scores" "output/model3_scores.csv"
+fetch_file "project/output/hybrid_scores" "output/hybrid_scores.csv"
 fetch_file "project/output/evaluation" "output/evaluation.csv"
 fetch_model "project/models/model1" "models/model1"
 fetch_model "project/models/model2" "models/model2"
+fetch_model "project/models/model3" "models/model3"
 
 check_prediction_header "output/model1_predictions.csv"
 check_prediction_header "output/model2_predictions.csv"
+check_prediction_header "output/model3_predictions.csv"
+check_prediction_header "output/hybrid_predictions.csv"
 check_scores "output/model1_scores.csv"
 check_scores "output/model2_scores.csv"
+check_scores "output/model3_scores.csv"
+check_scores "output/hybrid_scores.csv"
 
 echo ""
 echo "--- Step 3: Final inventory ---"
 ls -lh data/train.json data/test.json output/model*_predictions.csv \
-    output/model*_scores.csv output/evaluation.csv
-find models/model1 models/model2 -maxdepth 2 -type f | head -n 20
+    output/hybrid_predictions.csv output/model*_scores.csv \
+    output/hybrid_scores.csv output/evaluation.csv
+find models/model1 models/model2 models/model3 -maxdepth 2 -type f | head -n 20
 
 echo ""
 echo "==========================================================="
