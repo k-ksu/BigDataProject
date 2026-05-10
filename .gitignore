@@ -175,8 +175,13 @@ cython_debug/
 .pypirc
 
 # Big Data Project - dataset files (keep only on cluster, not in GitHub)
-data/
+/data/
 data_from_kaggle/
+
+# Generated local/Hadoop noise
+.DS_Store
+output/*.crc
+output/beeline_*.stderr
 
 # Secrets - passwords and credentials (NEVER commit these)
 secrets/

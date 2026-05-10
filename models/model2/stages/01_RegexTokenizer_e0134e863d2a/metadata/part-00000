@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.ml.feature.RegexTokenizer","timestamp":1777839513273,"sparkVersion":"3.2.4","uid":"RegexTokenizer_e0134e863d2a","paramMap":{"outputCol":"artist_tokens","pattern":"\\W+","gaps":true,"inputCol":"artists_clean"},"defaultParamMap":{"outputCol":"RegexTokenizer_e0134e863d2a__output","minTokenLength":1,"pattern":"\\s+","gaps":true,"toLowercase":true}}
