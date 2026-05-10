@@ -58,7 +58,7 @@ beeline_run "sql/db.hql" "output/hive_results.txt"
 echo "Hive results saved to output/hive_results.txt"
 
 echo ""
-echo "--- Step 3: Running EDA queries q1..q5 ---"
+echo "--- Step 3: Running EDA queries q1..q6 ---"
 
 # INSERT OVERWRITE DIRECTORY drops headers, so we add them here.
 declare -A HEADERS=(
@@ -67,9 +67,10 @@ declare -A HEADERS=(
     [q3]="interaction_flag,n,avg_danceability,avg_energy,avg_valence,avg_acousticness,avg_loudness,avg_tempo"
     [q4]="popularity_bucket,n_tracks,n_interactions,n_positive,positive_rate"
     [q5]="activity_bucket,user_count,pct_users,n_interactions,pct_interactions"
+    [q6]="sort_key,scenario,positive_rate"
 )
 
-for q in q1 q2 q3 q4 q5; do
+for q in q1 q2 q3 q4 q5 q6; do
     hql="sql/${q}.hql"
     [ -f "${hql}" ] || { echo "SKIP: ${hql} not found"; continue; }
 

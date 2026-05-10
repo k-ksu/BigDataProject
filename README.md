@@ -69,7 +69,7 @@ bash scripts/stage1.sh
 
 **SQL artefacts:**
 - `sql/db.hql` — creates Hive DB `team11_projectdb` at `project/hive/warehouse`, defines external AVRO tables on the Sqoop output, then builds optimised tables and drops the un-optimised originals.
-- `sql/q1.hql` … `sql/q5.hql` — five EDA insights, each materialised as a `qN_results` external table **and** exported to `output/qN.csv`.
+- `sql/q1.hql` … `sql/q6.hql` — six EDA insights, each materialised as a `qN_results` external table **and** exported to `output/qN.csv`.
 
 **Hive tables:**
 | Table | Storage | Partitioning | Bucketing | Notes |
@@ -83,6 +83,7 @@ bash scripts/stage1.sh
 3. `q3` — average audio features for positive vs negative interactions → which audio features actually discriminate the target.
 4. `q4` — positive-rate vs track popularity bucket → popularity bias and cold-start severity.
 5. `q5` — user-activity power law → per-user train/test split and activity-stratified evaluation.
+6. `q6` — marginal positive rate vs cold vs hit tracks → same numbers as q1+q4 combined view; motivates stratified eval and `log(popularity)`.
 
 **HDFS layout after Stage 2:**
 ```
