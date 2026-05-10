@@ -1,0 +1,1132 @@
+Connecting to jdbc:hive2://hadoop-03.uni.innopolis.ru:10001
+2026-05-10 18:40:26,353 INFO jdbc.Utils: Supplied authorities: hadoop-03.uni.innopolis.ru:10001
+2026-05-10 18:40:26,354 INFO jdbc.Utils: Resolved authority: hadoop-03.uni.innopolis.ru:10001
+Connected to: Apache Hive (version 3.1.3)
+Driver: Hive JDBC (version 2.3.9)
+Transaction isolation: TRANSACTION_REPEATABLE_READ
+INFO  : Compiling command(queryId=hive_20260510184026_df9ba426-72b1-4999-8a84-7d2238c0e1f7): USE team11_projectdb
+INFO  : Semantic Analysis Completed (retrial = false)
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : EXPLAIN output for queryid hive_20260510184026_df9ba426-72b1-4999-8a84-7d2238c0e1f7 : STAGE DEPENDENCIES:
+  Stage-0 is a root stage [DDL]
+
+STAGE PLANS:
+  Stage: Stage-0
+
+
+INFO  : Completed compiling command(queryId=hive_20260510184026_df9ba426-72b1-4999-8a84-7d2238c0e1f7); Time taken: 0.048 seconds
+INFO  : Executing command(queryId=hive_20260510184026_df9ba426-72b1-4999-8a84-7d2238c0e1f7): USE team11_projectdb
+INFO  : Starting task [Stage-0:DDL] in serial mode
+INFO  : Completed executing command(queryId=hive_20260510184026_df9ba426-72b1-4999-8a84-7d2238c0e1f7); Time taken: 0.032 seconds
+INFO  : OK
+No rows affected (0.153 seconds)
+No rows affected (0.003 seconds)
+INFO  : Compiling command(queryId=hive_20260510184026_ec740711-31bd-4d72-be98-18136e20ad07): DROP TABLE IF EXISTS q2_results
+INFO  : Semantic Analysis Completed (retrial = false)
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : EXPLAIN output for queryid hive_20260510184026_ec740711-31bd-4d72-be98-18136e20ad07 : STAGE DEPENDENCIES:
+  Stage-0 is a root stage [DDL]
+
+STAGE PLANS:
+  Stage: Stage-0
+      Drop Table Operator:
+        Drop Table
+          table: q2_results
+
+
+INFO  : Completed compiling command(queryId=hive_20260510184026_ec740711-31bd-4d72-be98-18136e20ad07); Time taken: 0.04 seconds
+INFO  : Executing command(queryId=hive_20260510184026_ec740711-31bd-4d72-be98-18136e20ad07): DROP TABLE IF EXISTS q2_results
+INFO  : Starting task [Stage-0:DDL] in serial mode
+INFO  : Completed executing command(queryId=hive_20260510184026_ec740711-31bd-4d72-be98-18136e20ad07); Time taken: 0.009 seconds
+INFO  : OK
+No rows affected (0.075 seconds)
+INFO  : Compiling command(queryId=hive_20260510184026_4e95cea9-61bd-415e-ad84-6271b49e6ec7): CREATE EXTERNAL TABLE q2_results(
+positives_per_user_artist INT,
+pair_count                BIGINT,
+pct                       DOUBLE
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+LOCATION 'project/hive/warehouse/q2_results'
+INFO  : Semantic Analysis Completed (retrial = false)
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : EXPLAIN output for queryid hive_20260510184026_4e95cea9-61bd-415e-ad84-6271b49e6ec7 : STAGE DEPENDENCIES:
+  Stage-0 is a root stage [DDL]
+
+STAGE PLANS:
+  Stage: Stage-0
+      Create Table Operator:
+        Create Table
+          columns: positives_per_user_artist int, pair_count bigint, pct double
+          field delimiter: ,
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          location: project/hive/warehouse/q2_results
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: team11_projectdb.q2_results
+          isExternal: true
+
+
+INFO  : Completed compiling command(queryId=hive_20260510184026_4e95cea9-61bd-415e-ad84-6271b49e6ec7); Time taken: 0.043 seconds
+INFO  : Executing command(queryId=hive_20260510184026_4e95cea9-61bd-415e-ad84-6271b49e6ec7): CREATE EXTERNAL TABLE q2_results(
+positives_per_user_artist INT,
+pair_count                BIGINT,
+pct                       DOUBLE
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+LOCATION 'project/hive/warehouse/q2_results'
+INFO  : Starting task [Stage-0:DDL] in serial mode
+INFO  : Completed executing command(queryId=hive_20260510184026_4e95cea9-61bd-415e-ad84-6271b49e6ec7); Time taken: 0.036 seconds
+INFO  : OK
+No rows affected (0.115 seconds)
+INFO  : Compiling command(queryId=hive_20260510184027_d90804ab-0755-4669-90dd-f00737cac00e): WITH ua_pairs AS (
+SELECT
+i.user_id,
+t.artists  AS artist,
+COUNT(*)   AS pos_count
+FROM interactions_part i
+JOIN tracks_part       t ON i.item_id = t.id
+WHERE i.interaction_flag = 1
+GROUP BY i.user_id, t.artists
+),
+binned AS (
+SELECT CASE WHEN pos_count >= 10 THEN 10 ELSE pos_count END AS bucket
+FROM ua_pairs
+)
+INSERT OVERWRITE TABLE q2_results
+SELECT
+bucket                                              AS positives_per_user_artist,
+COUNT(*)                                            AS pair_count,
+ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 4)  AS pct
+FROM binned
+GROUP BY bucket
+ORDER BY bucket
+INFO  : Semantic Analysis Completed (retrial = false)
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:_col0, type:int, comment:null), FieldSchema(name:_col1, type:bigint, comment:null), FieldSchema(name:_col2, type:double, comment:null)], properties:null)
+INFO  : EXPLAIN output for queryid hive_20260510184027_d90804ab-0755-4669-90dd-f00737cac00e : STAGE DEPENDENCIES:
+  Stage-1 is a root stage [MAPRED]
+  Stage-2 depends on stages: Stage-1 [DEPENDENCY_COLLECTION]
+  Stage-0 depends on stages: Stage-2 [MOVE]
+  Stage-3 depends on stages: Stage-0 [STATS]
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      DagId: hive_20260510184027_d90804ab-0755-4669-90dd-f00737cac00e:4563
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+      DagName: hive_20260510184027_d90804ab-0755-4669-90dd-f00737cac00e:4563
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: i
+                  Statistics: Num rows: 8282872 Data size: 1780817480 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: item_id is not null (type: boolean)
+                    Statistics: Num rows: 8282872 Data size: 1780817480 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: user_id (type: string), item_id (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 8282872 Data size: 1780817480 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 8282872 Data size: 1780817480 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col0 (type: string)
+                        auto parallelism: true
+            Execution mode: vectorized
+            Path -> Alias:
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/interactions_part/interaction_flag=1 [i]
+            Path -> Partition:
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/interactions_part/interaction_flag=1 
+                Partition
+                  base file name: interaction_flag=1
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    interaction_flag 1
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true","item_id":"true","ts":"true","user_id":"true"}}
+                    bucket_count 11
+                    bucket_field_name user_id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/interactions_part/interaction_flag=1
+                    name team11_projectdb.interactions_part
+                    numFiles 11
+                    numRows 8282872
+                    partition_columns interaction_flag
+                    partition_columns.types int
+                    rawDataSize 1780817480
+                    serialization.ddl struct interactions_part { i32 id, string user_id, string item_id, i64 ts}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 72156538
+                    transient_lastDdlTime 1778427592
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name user_id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,user_id,item_id,ts
+                      columns.comments 
+                      columns.types int:string:string:bigint
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/interactions_part
+                      name team11_projectdb.interactions_part
+                      orc.compress SNAPPY
+                      partition_columns interaction_flag
+                      partition_columns.types int
+                      serialization.ddl struct interactions_part { i32 id, string user_id, string item_id, i64 ts}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427556
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.interactions_part
+                  name: team11_projectdb.interactions_part
+            Truncated Path -> Alias:
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/interactions_part/interaction_flag=1 [i]
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 1204025 Data size: 1028709384 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 1204025 Data size: 1028709384 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: string), artists (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1204025 Data size: 1028709384 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1204025 Data size: 1028709384 Basic stats: COMPLETE Column stats: NONE
+                        tag: 1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
+            Execution mode: vectorized
+            Path -> Alias:
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=0 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1900 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1908 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1909 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1917 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1920 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1923 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1924 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1925 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1926 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1927 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1928 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1929 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1930 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1931 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1932 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1933 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1935 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1936 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1937 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1938 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1939 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1942 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1943 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1944 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1945 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1946 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1947 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1948 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1949 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1950 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1951 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1952 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1953 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1954 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1955 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1956 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1957 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1958 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1959 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1960 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1961 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1962 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1963 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1964 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1965 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1966 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1967 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1968 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1969 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1970 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1971 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1972 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1973 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1974 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1975 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1976 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1977 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1978 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1979 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1980 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1981 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1982 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1983 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1984 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1985 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1986 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1987 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1988 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1989 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1990 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1991 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1992 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1993 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1994 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1995 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1996 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1997 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1998 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1999 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2000 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2001 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2002 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2003 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2004 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2005 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2006 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2007 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2008 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2009 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2010 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2011 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2012 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2013 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2014 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2015 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2016 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2017 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2018 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2019 [t]
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=2020 [t]
+            Path -> Partition:
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=0 
+                Partition
+                  base file name: year=0
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 0
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=0
+                    name team11_projectdb.tracks_part
+                    numFiles 5
+                    numRows 10
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 7983
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 16570
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1900 
+                Partition
+                  base file name: year=1900
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1900
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1900
+                    name team11_projectdb.tracks_part
+                    numFiles 7
+                    numRows 14
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 11436
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 24632
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1908 
+                Partition
+                  base file name: year=1908
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1908
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1908
+                    name team11_projectdb.tracks_part
+                    numFiles 10
+                    numRows 19
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 15825
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 35057
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1909 
+                Partition
+                  base file name: year=1909
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1909
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1909
+                    name team11_projectdb.tracks_part
+                    numFiles 10
+                    numRows 25
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 21287
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 38244
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1917 
+                Partition
+                  base file name: year=1917
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1917
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1917
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 52
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 46269
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 53519
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1920 
+                Partition
+                  base file name: year=1920
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1920
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1920
+                    name team11_projectdb.tracks_part
+                    numFiles 10
+                    numRows 25
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 21375
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 37248
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1923 
+                Partition
+                  base file name: year=1923
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1923
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1923
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 50
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 44046
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 48060
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1924 
+                Partition
+                  base file name: year=1924
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1924
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1924
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 36
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 33149
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 48100
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1925 
+                Partition
+                  base file name: year=1925
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1925
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1925
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 49
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 41517
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 48134
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1926 
+                Partition
+                  base file name: year=1926
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1926
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1926
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 107
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 94461
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 62983
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1927 
+                Partition
+                  base file name: year=1927
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1927
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1927
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 48
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 42163
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 50904
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1928 
+                Partition
+                  base file name: year=1928
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1928
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1928
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 114
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 99452
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 65757
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1929 
+                Partition
+                  base file name: year=1929
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1929
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1929
+                    name team11_projectdb.tracks_part
+                    numFiles 10
+                    numRows 32
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 26520
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 39819
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1930 
+                Partition
+                  base file name: year=1930
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1930
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1930
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 59
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 49988
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 51795
+                    transient_lastDdlTime 1778427549
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      bucket_count 11
+                      bucket_field_name id
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns id,name,album,album_id,artists,artist_ids,track_number,disc_number,explicit,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,duration_ms,time_signature,release_date
+                      columns.comments 
+                      columns.types string:string:string:string:string:string:int:int:boolean:double:double:int:double:int:double:double:double:double:double:double:int:double:string
+                      file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part
+                      name team11_projectdb.tracks_part
+                      orc.compress SNAPPY
+                      partition_columns year
+                      partition_columns.types int
+                      serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      transient_lastDdlTime 1778427516
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: team11_projectdb.tracks_part
+                  name: team11_projectdb.tracks_part
+              hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1931 
+                Partition
+                  base file name: year=1931
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  partition values:
+                    year 1931
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"acousticness":"true","album":"true","album_id":"true","artist_ids":"true","artists":"true","danceability":"true","disc_number":"true","duration_ms":"true","energy":"true","explicit":"true","id":"true","instrumentalness":"true","key":"true","liveness":"true","loudness":"true","mode":"true","name":"true","release_date":"true","speechiness":"true","tempo":"true","time_signature":"true","track_number":"true","valence":"true"}}
+                    bucket_count 11
+                    bucket_field_name id
+                    file.inputformat org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    location hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part/year=1931
+                    name team11_projectdb.tracks_part
+                    numFiles 11
+                    numRows 35
+                    partition_columns year
+                    partition_columns.types int
+                    rawDataSize 29612
+                    serialization.ddl struct tracks_part { string id, string name, string album, string album_id, string artists, string artist_ids, i32 track_number, i32 disc_number, bool explicit, double danceability, double energy, i32 key, double loudness, i32 mode, double speechiness, double acousticness, double instrumentalness, double liveness, double valence, double tempo, i32 duration_ms, double time_signature, string release_date}
+                    serialization.format 1
+[2K----------------------------------------------------------------------------------------------
+[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+[22;0m[2K----------------------------------------------------------------------------------------------
+[2KMap 1            container        INITED     11          0        0       11       0       0  
+Map 7            container       RUNNING      5          0        5        0       0       0  
+Reducer 2        container        INITED     11          0        0       11       0       0  
+Reducer 3        container        INITED      8          0        0        8       0       0  
+Reducer 4        container        INITED      4          0        0        4       0       0  
+Reducer 5        container        INITED      2          0        0        2       0       0  
+Reducer 6        container        INITED      1          0        0        1       0       0  
+[2K----------------------------------------------------------------------------------------------
+[2K[31;1mVERTICES: 00/07  [>>--------------------------] 0%    ELAPSED TIME: 3.76 s     
+[22;0m[2K----------------------------------------------------------------------------------------------
+[13A[2K----------------------------------------------------------------------------------------------
+[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+[22;0m[2K----------------------------------------------------------------------------------------------
+[2KMap 1            container        INITED     11          0        0       11       0       0  
+Map 7            container       RUNNING      5          0        5        0       0       0  
+Reducer 2        container        INITED     11          0        0       11       0       0  
+Reducer 3        container        INITED      8          0        0        8       0       0  
+Reducer 4        container        INITED      4          0        0        4       0       0  
+Reducer 5        container        INITED      2          0        0        2       0       0  
+Reducer 6        container        INITED      1          0        0        1       0       0  
+[2K----------------------------------------------------------------------------------------------
+[2K[31;1mVERTICES: 00/07  [>>--------------------------] 0%    ELAPSED TIME: 4.26 s     
+[22;0m[2K----------------------------------------------------------------------------------------------
+[13A[2K----------------------------------------------------------------------------------------------
+[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+[22;0m[2K----------------------------------------------------------------------------------------------
+[2KMap 1            container       RUNNING     11          0        3        8       0       0  
+Map 7            container       RUNNING      5          0        5        0       0       0  
+Reducer 2        container        INITED     11          0        0       11       0       0  
+Reducer 3        container        INITED      8          0        0        8       0       0  
+Reducer 4        container        INITED      4          0        0        4       0       0  
+Reducer 5        container        INITED      2          0        0        2       0       0  
+Reducer 6        container        INITED      1          0        0        1       0       0  
+[2K----------------------------------------------------------------------------------------------
+[2K[31;1mVERTICES: 00/07  [>>--------------------------] 0%    ELAPSED TIME: 5.26 s     
+[22;0m[2K----------------------------------------------------------------------------------------------
+[13A[2K----------------------------------------------------------------------------------------------
+[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+[22;0m[2K----------------------------------------------------------------------------------------------
+[2KMap 1            container       RUNNING     11          0       11        0       0       0  
+Map 7            container       RUNNING      5          0        5        0       0       0  
+Reducer 2        container        INITED     11          0        0       11       0       0  
+Reducer 3        container        INITED      8          0        0        8       0       0  
+Reducer 4        container        INITED      4          0        0        4       0       0  
+Reducer 5        container        INITED      2          0        0        2       0       0  
+Reducer 6        container        INITED      1          0        0        1       0       0  
+[2K----------------------------------------------------------------------------------------------
+[2K[31;1mVERTICES: 00/07  [>>--------------------------] 0%    ELAPSED TIME: 6.27 s     
+[22;0m[2K----------------------------------------------------------------------------------------------
