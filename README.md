@@ -74,8 +74,8 @@ bash scripts/stage1.sh
 **Hive tables:**
 | Table | Storage | Partitioning | Bucketing | Notes |
 |---|---|---|---|---|
-| `tracks_part` | AVRO + Snappy | `year` | `id` × 11 | catalogue-style table for content joins |
-| `interactions_part` | AVRO + Snappy | `interaction_flag` | `user_id` × 11 | fact table; partition key is the ML target |
+| `tracks_part` | ORC + Snappy | `year` | `id` × 11 | catalogue-style table for content joins |
+| `interactions_part` | ORC + Snappy | `interaction_flag` | `user_id` × 11 | fact table; partition key is the ML target |
 
 **EDA insights produced (each one is wired to a Stage 3 modelling decision):**
 1. `q1` — class balance of `interaction_flag` → class weights & metric choice (PR-AUC vs ROC-AUC).

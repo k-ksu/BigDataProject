@@ -13,6 +13,7 @@ JDBC_URL="jdbc:hive2://${HIVE_HOST}:${HIVE_PORT}"
 
 HDFS_AVSC_DIR="project/warehouse/avsc"
 HDFS_OUTPUT_DIR="project/output"
+HDFS_HIVE_DIR="project/hive/warehouse"
 
 SECRETS_FILE="secrets/.hive.pass"
 PSQL_SECRETS_FILE="secrets/.psql.pass"
@@ -66,6 +67,7 @@ hdfs dfs -ls "${HDFS_AVSC_DIR}"
 
 echo ""
 echo "--- Step 2: Building Hive database (sql/db.hql) ---"
+hdfs dfs -rm -r -skipTrash "${HDFS_HIVE_DIR}" >/dev/null 2>&1 || true
 beeline_run "sql/db.hql" "output/hive_results.txt"
 echo "Hive results saved to output/hive_results.txt"
 
