@@ -13,7 +13,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS stage3_evaluation(
     trueInteractions   DOUBLE,
     threshold          DOUBLE,
     accuracy           DOUBLE,
-    precision          DOUBLE,
+    `precision`        DOUBLE,
     recall             DOUBLE,
     f1                 DOUBLE,
     rankingUsers       BIGINT,
@@ -48,7 +48,33 @@ STORED AS TEXTFILE
 LOCATION 'project/output/model2_predictions'
 TBLPROPERTIES ('skip.header.line.count'='1');
 
+CREATE EXTERNAL TABLE IF NOT EXISTS stage3_model1_scores(
+    user_id    STRING,
+    item_id    STRING,
+    label      DOUBLE,
+    prediction DOUBLE,
+    rel_score  DOUBLE
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION 'project/output/model1_scores'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS stage3_model2_scores(
+    user_id    STRING,
+    item_id    STRING,
+    label      DOUBLE,
+    prediction DOUBLE,
+    rel_score  DOUBLE
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION 'project/output/model2_scores'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
 SHOW TABLES LIKE 'stage3*';
 SELECT * FROM stage3_evaluation;
 SELECT * FROM stage3_model1_predictions LIMIT 10;
 SELECT * FROM stage3_model2_predictions LIMIT 10;
+SELECT * FROM stage3_model1_scores LIMIT 10;
+SELECT * FROM stage3_model2_scores LIMIT 10;

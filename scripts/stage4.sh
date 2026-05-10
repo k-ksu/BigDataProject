@@ -82,6 +82,8 @@ echo "--- Step 1: Checking Stage 3 HDFS artifacts ---"
 ensure_hdfs_csv_dir "output/evaluation.csv" "project/output/evaluation"
 ensure_hdfs_csv_dir "output/model1_predictions.csv" "project/output/model1_predictions"
 ensure_hdfs_csv_dir "output/model2_predictions.csv" "project/output/model2_predictions"
+ensure_hdfs_csv_dir "output/model1_scores.csv" "project/output/model1_scores"
+ensure_hdfs_csv_dir "output/model2_scores.csv" "project/output/model2_scores"
 
 echo ""
 echo "--- Step 2: Creating Stage 3 Hive tables ---"
@@ -94,6 +96,8 @@ cat <<'DATASETS'
   - stage3_evaluation
   - stage3_model1_predictions
   - stage3_model2_predictions
+  - stage3_model1_scores
+  - stage3_model2_scores
 DATASETS
 
 echo ""
