@@ -28,6 +28,10 @@ SET hive.enforce.bucketing                   = true;
 SET hive.exec.max.dynamic.partitions         = 5000;
 SET hive.exec.max.dynamic.partitions.pernode = 2000;
 SET hive.execution.engine                    = tez;
+SET hive.exec.compress.output                = true;
+SET mapred.output.compress                   = true;
+SET mapred.output.compression.codec          = org.apache.hadoop.io.compress.SnappyCodec;
+SET orc.compress                             = SNAPPY;
 
 -- year is omitted from the column list because it becomes the partition key;
 -- `key` and `mode` are HiveQL reserved words and must be back-ticked.
@@ -59,9 +63,9 @@ CREATE EXTERNAL TABLE tracks_part(
 )
 PARTITIONED BY (year INT)
 CLUSTERED BY  (id) INTO 11 BUCKETS
-STORED AS AVRO
+STORED AS ORC
 LOCATION 'project/hive/warehouse/tracks_part'
-TBLPROPERTIES ('AVRO.COMPRESS'='SNAPPY');
+TBLPROPERTIES ('orc.compress'='SNAPPY');
 
 INSERT OVERWRITE TABLE tracks_part PARTITION (year)
 SELECT
@@ -85,9 +89,9 @@ CREATE EXTERNAL TABLE interactions_part(
 )
 PARTITIONED BY (interaction_flag INT)
 CLUSTERED BY  (user_id) INTO 11 BUCKETS
-STORED AS AVRO
+STORED AS ORC
 LOCATION 'project/hive/warehouse/interactions_part'
-TBLPROPERTIES ('AVRO.COMPRESS'='SNAPPY');
+TBLPROPERTIES ('orc.compress'='SNAPPY');
 
 INSERT OVERWRITE TABLE interactions_part PARTITION (interaction_flag)
 SELECT id, user_id, item_id, ts, interaction_flag

@@ -14,7 +14,7 @@ HIVE_JAR = "/shared/hive-jdbc-3.1.3-standalone.jar"
 
 SQL_DIR = "sql"
 DDL_FILE = os.path.join(SQL_DIR, "db.hql")
-EDA_FILES = [os.path.join(SQL_DIR, f"q{i}.hql") for i in range(1, 6)]
+EDA_FILES = [os.path.join(SQL_DIR, f"q{i}.hql") for i in range(1, 7)]
 
 SECRETS = ["secrets/.hive.pass", "secrets/.psql.pass"]
 

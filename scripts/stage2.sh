@@ -13,6 +13,7 @@ JDBC_URL="jdbc:hive2://${HIVE_HOST}:${HIVE_PORT}"
 
 HDFS_AVSC_DIR="project/warehouse/avsc"
 HDFS_OUTPUT_DIR="project/output"
+HDFS_HIVE_DIR="project/hive/warehouse"
 
 SECRETS_FILE="secrets/.hive.pass"
 PSQL_SECRETS_FILE="secrets/.psql.pass"
@@ -31,11 +32,23 @@ mkdir -p output
 beeline_run () {
     local hql="$1"
     local out="${2:-/dev/stdout}"
+    local base err ec
+    base="$(basename "${hql}" .hql)"
+    err="output/beeline_${base}.stderr"
+    set +e
     beeline -u "${JDBC_URL}" \
             -n "${TEAM}" -p "${password}" \
             --silent=false --showHeader=true --outputformat=table \
             -f "${hql}" \
-            > "${out}" 2> /dev/null
+            > "${out}" 2> "${err}"
+    ec=$?
+    set -e
+    if [ "${ec}" -ne 0 ]; then
+        echo "ERROR: beeline exited ${ec} on ${hql}"
+        echo "---- tail ${err} ----"
+        tail -80 "${err}" 2>/dev/null || true
+        exit "${ec}"
+    fi
 }
 
 echo ""
@@ -54,11 +67,12 @@ hdfs dfs -ls "${HDFS_AVSC_DIR}"
 
 echo ""
 echo "--- Step 2: Building Hive database (sql/db.hql) ---"
+hdfs dfs -rm -r -skipTrash "${HDFS_HIVE_DIR}" >/dev/null 2>&1 || true
 beeline_run "sql/db.hql" "output/hive_results.txt"
 echo "Hive results saved to output/hive_results.txt"
 
 echo ""
-echo "--- Step 3: Running EDA queries q1..q5 ---"
+echo "--- Step 3: Running EDA queries q1..q6 ---"
 
 # INSERT OVERWRITE DIRECTORY drops headers, so we add them here.
 declare -A HEADERS=(
@@ -67,9 +81,10 @@ declare -A HEADERS=(
     [q3]="interaction_flag,n,avg_danceability,avg_energy,avg_valence,avg_acousticness,avg_loudness,avg_tempo"
     [q4]="popularity_bucket,n_tracks,n_interactions,n_positive,positive_rate"
     [q5]="activity_bucket,user_count,pct_users,n_interactions,pct_interactions"
+    [q6]="sort_key,scenario,positive_rate"
 )
 
-for q in q1 q2 q3 q4 q5; do
+for q in q1 q2 q3 q4 q5 q6; do
     hql="sql/${q}.hql"
     [ -f "${hql}" ] || { echo "SKIP: ${hql} not found"; continue; }
 
