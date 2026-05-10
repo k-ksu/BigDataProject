@@ -58,25 +58,30 @@ beeline_run () {
     fi
 }
 
-require_hdfs_dir () {
-    local path="$1"
+ensure_hdfs_csv_dir () {
+    local local_file="$1"
+    local hdfs_dir="$2"
 
-    if ! hdfs dfs -test -d "${path}"; then
-        echo "ERROR: required HDFS directory is missing: ${path}"
+    if hdfs dfs -test -d "${hdfs_dir}"; then
+        echo "OK: ${hdfs_dir}"
+        return
+    fi
+
+    if [ ! -f "${local_file}" ]; then
+        echo "ERROR: required local file is missing: ${local_file}"
         exit 1
     fi
+
+    hdfs dfs -mkdir -p "${hdfs_dir}"
+    hdfs dfs -put -f "${local_file}" "${hdfs_dir}/part-00000.csv"
+    echo "UPLOADED: ${local_file} -> ${hdfs_dir}"
 }
 
 echo ""
 echo "--- Step 1: Checking Stage 3 HDFS artifacts ---"
-for path in \
-    project/output/evaluation.csv \
-    project/output/model1_predictions.csv \
-    project/output/model2_predictions.csv
-do
-    require_hdfs_dir "${path}"
-    echo "OK: ${path}"
-done
+ensure_hdfs_csv_dir "output/evaluation.csv" "project/output/evaluation"
+ensure_hdfs_csv_dir "output/model1_predictions.csv" "project/output/model1_predictions"
+ensure_hdfs_csv_dir "output/model2_predictions.csv" "project/output/model2_predictions"
 
 echo ""
 echo "--- Step 2: Creating Stage 3 Hive tables ---"
