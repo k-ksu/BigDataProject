@@ -93,6 +93,7 @@ echo "Stage 4 Hive results saved to output/stage4_hive_results.txt"
 echo ""
 echo "--- Step 3: Superset datasets ---"
 cat <<'DATASETS'
+  - team11_stage3_feature_extraction_characteristics
   - stage3_evaluation
   - stage3_model1_predictions
   - stage3_model2_predictions

@@ -72,7 +72,31 @@ STORED AS TEXTFILE
 LOCATION 'project/output/model2_scores'
 TBLPROPERTIES ('skip.header.line.count'='1');
 
+CREATE VIEW IF NOT EXISTS team11_stage3_feature_extraction_characteristics AS
+SELECT stack(
+    6,
+    'track audio',
+    'danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration_ms',
+    'content preference signal',
+    'track metadata',
+    'explicit, key, mode, time_signature, year',
+    'track context signal',
+    'artist text',
+    'tokenized artists with HashingTF',
+    'artist preference signal',
+    'timestamp',
+    'calendar and cyclic time features from ts',
+    'listening time pattern',
+    'user history',
+    'recent user aggregates and positive-rate history',
+    'previous behavior signal',
+    'user-artist history',
+    'recent aggregates for the same artist',
+    'repeated artist interest signal'
+) AS (feature_group, examples, purpose);
+
 SHOW TABLES LIKE 'stage3*';
+SELECT * FROM team11_stage3_feature_extraction_characteristics;
 SELECT * FROM stage3_evaluation;
 SELECT * FROM stage3_model1_predictions LIMIT 10;
 SELECT * FROM stage3_model2_predictions LIMIT 10;
