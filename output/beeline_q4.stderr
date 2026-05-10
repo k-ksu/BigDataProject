@@ -1,31 +1,30 @@
-log4j:WARN No appenders could be found for logger (org.apache.hadoop.util.Shell).
-log4j:WARN Please initialize the log4j system properly.
-log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
 Connecting to jdbc:hive2://hadoop-03.uni.innopolis.ru:10001
+2026-05-10 18:41:43,029 INFO jdbc.Utils: Supplied authorities: hadoop-03.uni.innopolis.ru:10001
+2026-05-10 18:41:43,030 INFO jdbc.Utils: Resolved authority: hadoop-03.uni.innopolis.ru:10001
 Connected to: Apache Hive (version 3.1.3)
 Driver: Hive JDBC (version 2.3.9)
 Transaction isolation: TRANSACTION_REPEATABLE_READ
-INFO  : Compiling command(queryId=hive_20260510183630_123aebef-f728-4260-b0b0-299762b520e3): USE team11_projectdb
+INFO  : Compiling command(queryId=hive_20260510184143_f325ece2-dfc0-4d6e-8471-b1e116917933): USE team11_projectdb
 INFO  : Semantic Analysis Completed (retrial = false)
 INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : EXPLAIN output for queryid hive_20260510183630_123aebef-f728-4260-b0b0-299762b520e3 : STAGE DEPENDENCIES:
+INFO  : EXPLAIN output for queryid hive_20260510184143_f325ece2-dfc0-4d6e-8471-b1e116917933 : STAGE DEPENDENCIES:
   Stage-0 is a root stage [DDL]
 
 STAGE PLANS:
   Stage: Stage-0
 
 
-INFO  : Completed compiling command(queryId=hive_20260510183630_123aebef-f728-4260-b0b0-299762b520e3); Time taken: 0.055 seconds
-INFO  : Executing command(queryId=hive_20260510183630_123aebef-f728-4260-b0b0-299762b520e3): USE team11_projectdb
+INFO  : Completed compiling command(queryId=hive_20260510184143_f325ece2-dfc0-4d6e-8471-b1e116917933); Time taken: 0.047 seconds
+INFO  : Executing command(queryId=hive_20260510184143_f325ece2-dfc0-4d6e-8471-b1e116917933): USE team11_projectdb
 INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : Completed executing command(queryId=hive_20260510183630_123aebef-f728-4260-b0b0-299762b520e3); Time taken: 0.016 seconds
+INFO  : Completed executing command(queryId=hive_20260510184143_f325ece2-dfc0-4d6e-8471-b1e116917933); Time taken: 0.01 seconds
 INFO  : OK
-No rows affected (0.135 seconds)
+No rows affected (0.105 seconds)
 No rows affected (0.003 seconds)
-INFO  : Compiling command(queryId=hive_20260510183630_7810341d-2508-48e0-8b4e-e2f9da65f8b9): DROP TABLE IF EXISTS q4_results
+INFO  : Compiling command(queryId=hive_20260510184143_75c57bc3-1e98-4777-94e7-e74dbd5de083): DROP TABLE IF EXISTS q4_results
 INFO  : Semantic Analysis Completed (retrial = false)
 INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : EXPLAIN output for queryid hive_20260510183630_7810341d-2508-48e0-8b4e-e2f9da65f8b9 : STAGE DEPENDENCIES:
+INFO  : EXPLAIN output for queryid hive_20260510184143_75c57bc3-1e98-4777-94e7-e74dbd5de083 : STAGE DEPENDENCIES:
   Stage-0 is a root stage [DDL]
 
 STAGE PLANS:
@@ -35,13 +34,13 @@ STAGE PLANS:
           table: q4_results
 
 
-INFO  : Completed compiling command(queryId=hive_20260510183630_7810341d-2508-48e0-8b4e-e2f9da65f8b9); Time taken: 0.028 seconds
-INFO  : Executing command(queryId=hive_20260510183630_7810341d-2508-48e0-8b4e-e2f9da65f8b9): DROP TABLE IF EXISTS q4_results
+INFO  : Completed compiling command(queryId=hive_20260510184143_75c57bc3-1e98-4777-94e7-e74dbd5de083); Time taken: 0.03 seconds
+INFO  : Executing command(queryId=hive_20260510184143_75c57bc3-1e98-4777-94e7-e74dbd5de083): DROP TABLE IF EXISTS q4_results
 INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : Completed executing command(queryId=hive_20260510183630_7810341d-2508-48e0-8b4e-e2f9da65f8b9); Time taken: 0.003 seconds
+INFO  : Completed executing command(queryId=hive_20260510184143_75c57bc3-1e98-4777-94e7-e74dbd5de083); Time taken: 0.005 seconds
 INFO  : OK
-No rows affected (0.051 seconds)
-INFO  : Compiling command(queryId=hive_20260510183630_87b929dc-bbff-4ec9-a3ca-0ccdbe349292): CREATE EXTERNAL TABLE q4_results(
+No rows affected (0.056 seconds)
+INFO  : Compiling command(queryId=hive_20260510184143_5da309bf-0eb5-46c6-9a97-b2bb67bb7490): CREATE EXTERNAL TABLE q4_results(
 popularity_bucket STRING,
 n_tracks          BIGINT,
 n_interactions    BIGINT,
@@ -52,7 +51,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 LOCATION 'project/hive/warehouse/q4_results'
 INFO  : Semantic Analysis Completed (retrial = false)
 INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : EXPLAIN output for queryid hive_20260510183630_87b929dc-bbff-4ec9-a3ca-0ccdbe349292 : STAGE DEPENDENCIES:
+INFO  : EXPLAIN output for queryid hive_20260510184143_5da309bf-0eb5-46c6-9a97-b2bb67bb7490 : STAGE DEPENDENCIES:
   Stage-0 is a root stage [DDL]
 
 STAGE PLANS:
@@ -69,8 +68,8 @@ STAGE PLANS:
           isExternal: true
 
 
-INFO  : Completed compiling command(queryId=hive_20260510183630_87b929dc-bbff-4ec9-a3ca-0ccdbe349292); Time taken: 0.043 seconds
-INFO  : Executing command(queryId=hive_20260510183630_87b929dc-bbff-4ec9-a3ca-0ccdbe349292): CREATE EXTERNAL TABLE q4_results(
+INFO  : Completed compiling command(queryId=hive_20260510184143_5da309bf-0eb5-46c6-9a97-b2bb67bb7490); Time taken: 0.033 seconds
+INFO  : Executing command(queryId=hive_20260510184143_5da309bf-0eb5-46c6-9a97-b2bb67bb7490): CREATE EXTERNAL TABLE q4_results(
 popularity_bucket STRING,
 n_tracks          BIGINT,
 n_interactions    BIGINT,
@@ -80,10 +79,10 @@ positive_rate     DOUBLE
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 LOCATION 'project/hive/warehouse/q4_results'
 INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : Completed executing command(queryId=hive_20260510183630_87b929dc-bbff-4ec9-a3ca-0ccdbe349292); Time taken: 0.027 seconds
+INFO  : Completed executing command(queryId=hive_20260510184143_5da309bf-0eb5-46c6-9a97-b2bb67bb7490); Time taken: 0.029 seconds
 INFO  : OK
-No rows affected (0.105 seconds)
-INFO  : Compiling command(queryId=hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e): WITH track_stats AS (
+No rows affected (0.096 seconds)
+INFO  : Compiling command(queryId=hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec): WITH track_stats AS (
 SELECT
 item_id,
 COUNT(*)              AS total,
@@ -116,7 +115,7 @@ GROUP BY popularity_bucket
 ORDER BY n_interactions
 INFO  : Semantic Analysis Completed (retrial = false)
 INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:_col0, type:string, comment:null), FieldSchema(name:_col1, type:bigint, comment:null), FieldSchema(name:_col2, type:bigint, comment:null), FieldSchema(name:_col3, type:bigint, comment:null), FieldSchema(name:_col4, type:double, comment:null)], properties:null)
-INFO  : EXPLAIN output for queryid hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e : STAGE DEPENDENCIES:
+INFO  : EXPLAIN output for queryid hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec : STAGE DEPENDENCIES:
   Stage-1 is a root stage [MAPRED]
   Stage-2 depends on stages: Stage-1 [DEPENDENCY_COLLECTION]
   Stage-0 depends on stages: Stage-2 [MOVE]
@@ -125,12 +124,12 @@ INFO  : EXPLAIN output for queryid hive_20260510183630_3d4bc78c-d102-4a29-ab23-b
 STAGE PLANS:
   Stage: Stage-1
     Tez
-      DagId: hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e:4533
+      DagId: hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec:4581
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-      DagName: hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e:4533
+      DagName: hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec:4581
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -185,8 +184,8 @@ STAGE PLANS:
                     serialization.ddl struct interactions_part { i32 id, string user_id, string item_id, i64 ts}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 92277323
-                    transient_lastDdlTime 1778427241
+                    totalSize 92283754
+                    transient_lastDdlTime 1778427592
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -210,7 +209,7 @@ STAGE PLANS:
                       serialization.ddl struct interactions_part { i32 id, string user_id, string item_id, i64 ts}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      transient_lastDdlTime 1778427214
+                      transient_lastDdlTime 1778427556
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: team11_projectdb.interactions_part
                   name: team11_projectdb.interactions_part
@@ -237,8 +236,8 @@ STAGE PLANS:
                     serialization.ddl struct interactions_part { i32 id, string user_id, string item_id, i64 ts}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 72169496
-                    transient_lastDdlTime 1778427241
+                    totalSize 72156538
+                    transient_lastDdlTime 1778427592
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -262,7 +261,7 @@ STAGE PLANS:
                       serialization.ddl struct interactions_part { i32 id, string user_id, string item_id, i64 ts}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      transient_lastDdlTime 1778427214
+                      transient_lastDdlTime 1778427556
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: team11_projectdb.interactions_part
                   name: team11_projectdb.interactions_part
@@ -330,10 +329,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-36-30_905_8612033599024872575-2189/-ext-10000
+                  directory: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-41-43_846_4913126272001890574-2246/-ext-10000
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 2952138 Data size: 634709670 Basic stats: COMPLETE Column stats: NONE
-                  Stats Publishing Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-36-30_905_8612033599024872575-2189/-ext-10000/
+                  Stats Publishing Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-41-43_846_4913126272001890574-2246/-ext-10000/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -353,7 +352,7 @@ STAGE PLANS:
                         serialization.ddl struct q4_results { string popularity_bucket, i64 n_tracks, i64 n_interactions, i64 n_positive, double positive_rate}
                         serialization.format ,
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        transient_lastDdlTime 1778427390
+                        transient_lastDdlTime 1778427703
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: team11_projectdb.q4_results
                   TotalFiles: 1
@@ -375,10 +374,10 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
-                        directory: hdfs://hadoop-02.uni.innopolis.ru:8020/tmp/hive/team11/cb6245bc-9feb-4ece-a936-eb819f2fd19b/hive_2026-05-10_18-36-31_167_4972420282107487838-2189/-mr-10000/.hive-staging_hive_2026-05-10_18-36-31_167_4972420282107487838-2189/-ext-10001
+                        directory: hdfs://hadoop-02.uni.innopolis.ru:8020/tmp/hive/team11/d4dc1100-bbc6-4846-8ace-0e1b9e9f263a/hive_2026-05-10_18-41-44_082_1800239484293785302-2246/-mr-10000/.hive-staging_hive_2026-05-10_18-41-44_082_1800239484293785302-2246/-ext-10001
                         NumFilesPerFileSink: 1
                         Statistics: Num rows: 1 Data size: 2136 Basic stats: COMPLETE Column stats: NONE
-                        Stats Publishing Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/tmp/hive/team11/cb6245bc-9feb-4ece-a936-eb819f2fd19b/hive_2026-05-10_18-36-31_167_4972420282107487838-2189/-mr-10000/.hive-staging_hive_2026-05-10_18-36-31_167_4972420282107487838-2189/-ext-10001/
+                        Stats Publishing Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/tmp/hive/team11/d4dc1100-bbc6-4846-8ace-0e1b9e9f263a/hive_2026-05-10_18-41-44_082_1800239484293785302-2246/-mr-10000/.hive-staging_hive_2026-05-10_18-41-44_082_1800239484293785302-2246/-ext-10001/
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -402,7 +401,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-36-30_905_8612033599024872575-2189/-ext-10000
+          source: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-41-43_846_4913126272001890574-2246/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -422,14 +421,14 @@ STAGE PLANS:
                 serialization.ddl struct q4_results { string popularity_bucket, i64 n_tracks, i64 n_interactions, i64 n_positive, double positive_rate}
                 serialization.format ,
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1778427390
+                transient_lastDdlTime 1778427703
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: team11_projectdb.q4_results
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
-          Stats Aggregation Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-36-30_905_8612033599024872575-2189/-ext-10000/
+          Stats Aggregation Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-41-43_846_4913126272001890574-2246/-ext-10000/
       Column Stats Desc:
           Columns: popularity_bucket, n_tracks, n_interactions, n_positive, positive_rate
           Column Types: string, bigint, bigint, bigint, double
@@ -437,8 +436,8 @@ STAGE PLANS:
           Is Table Level Stats: true
 
 
-INFO  : Completed compiling command(queryId=hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e); Time taken: 0.328 seconds
-INFO  : Executing command(queryId=hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e): WITH track_stats AS (
+INFO  : Completed compiling command(queryId=hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec); Time taken: 0.325 seconds
+INFO  : Executing command(queryId=hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec): WITH track_stats AS (
 SELECT
 item_id,
 COUNT(*)              AS total,
@@ -469,15 +468,15 @@ ROUND(SUM(pos) * 1.0 / SUM(total), 4) AS positive_rate
 FROM bucketed
 GROUP BY popularity_bucket
 ORDER BY n_interactions
-INFO  : Query ID = hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e
+INFO  : Query ID = hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec
 INFO  : Total jobs = 1
 INFO  : Launching Job 1 out of 1
 INFO  : Starting task [Stage-1:MAPRED] in serial mode
-INFO  : Subscribed to counters: [] for queryId: hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e
+INFO  : Subscribed to counters: [] for queryId: hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec
 INFO  : Tez session hasn't been created yet. Opening session
 INFO  : Dag name: WITH track_stats AS (
 SELEC...n_interactions (Stage-1)
-INFO  : Status: Running (Executing on YARN cluster with App id application_1777989965680_4782)
+INFO  : Status: Running (Executing on YARN cluster with App id application_1777989965680_4816)
 
 [2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -487,7 +486,7 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 0.73 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 0.86 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -497,7 +496,7 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 1.24 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 1.37 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -507,7 +506,7 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 1.74 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 1.87 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -517,7 +516,7 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 2.24 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 2.37 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -527,7 +526,7 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 2.75 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 2.88 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -537,27 +536,37 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 3.25 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 3.38 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
 [22;0m[2K----------------------------------------------------------------------------------------------
-[2KMap 1            container       RUNNING     22          0       10       12       0       0  
+[2KMap 1            container        INITED     22          0        0       22       0       0  
 Reducer 2        container        INITED     10          0        0       10       0       0  
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 3.75 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 3.88 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
 [22;0m[2K----------------------------------------------------------------------------------------------
-[2KMap 1            container       RUNNING     22          0       11       11       0       0  
+[2KMap 1            container       RUNNING     22          0        3       19       0       0  
 Reducer 2        container        INITED     10          0        0       10       0       0  
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 4.26 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 4.39 s     
+[22;0m[2K----------------------------------------------------------------------------------------------
+[10A[2K----------------------------------------------------------------------------------------------
+[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+[22;0m[2K----------------------------------------------------------------------------------------------
+[2KMap 1            container       RUNNING     22          0       20        2       0       0  
+Reducer 2        container        INITED     10          0        0       10       0       0  
+Reducer 3        container        INITED      5          0        0        5       0       0  
+Reducer 4        container        INITED      1          0        0        1       0       0  
+[2K----------------------------------------------------------------------------------------------
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 4.89 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -567,7 +576,7 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 4.76 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 5.39 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -577,7 +586,7 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 5.26 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 5.90 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -587,7 +596,17 @@ Reducer 2        container        INITED     10          0        0       10    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 5.77 s     
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 6.90 s     
+[22;0m[2K----------------------------------------------------------------------------------------------
+[10A[2K----------------------------------------------------------------------------------------------
+[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+[22;0m[2K----------------------------------------------------------------------------------------------
+[2KMap 1            container       RUNNING     22          0       22        0       0       0  
+Reducer 2        container        INITED     10          0        0       10       0       0  
+Reducer 3        container        INITED      5          0        0        5       0       0  
+Reducer 4        container        INITED      1          0        0        1       0       0  
+[2K----------------------------------------------------------------------------------------------
+[2K[31;1mVERTICES: 00/04  [>>--------------------------] 0%    ELAPSED TIME: 7.90 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -597,7 +616,7 @@ Reducer 2        container       RUNNING     10          0        2        8    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [==>>------------------------] 7%    ELAPSED TIME: 6.77 s     
+[2K[31;1mVERTICES: 00/04  [==>>------------------------] 7%    ELAPSED TIME: 8.90 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -607,47 +626,27 @@ Reducer 2        container       RUNNING     10          0        2        8    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [==>>------------------------] 7%    ELAPSED TIME: 7.78 s     
+[2K[31;1mVERTICES: 00/04  [==>>------------------------] 7%    ELAPSED TIME: 9.91 s     
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
 [22;0m[2K----------------------------------------------------------------------------------------------
-[2KMap 1 .          container       RUNNING     22          3       19        0       0       0  
-Reducer 2        container       RUNNING     10          0        2        8       0       0  
+[2KMap 1 ..         container       RUNNING     22          6       16        0       0       0  
+Reducer 2        container       RUNNING     10          0        3        7       0       0  
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [==>>------------------------] 7%    ELAPSED TIME: 8.78 s     
+[2K[31;1mVERTICES: 00/04  [====>>----------------------] 15%   ELAPSED TIME: 10.91 s    
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
 [22;0m[2K----------------------------------------------------------------------------------------------
-[2KMap 1 ....       container       RUNNING     22         10       12        0       0       0  
-Reducer 2        container       RUNNING     10          0        6        4       0       0  
+[2KMap 1 .....      container       RUNNING     22         11       11        0       0       0  
+Reducer 2        container       RUNNING     10          0        7        3       0       0  
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [======>>--------------------] 26%   ELAPSED TIME: 9.78 s     
-[22;0m[2K----------------------------------------------------------------------------------------------
-[10A[2K----------------------------------------------------------------------------------------------
-[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
-[22;0m[2K----------------------------------------------------------------------------------------------
-[2KMap 1 ....       container       RUNNING     22         10       12        0       0       0  
-Reducer 2        container       RUNNING     10          0        6        4       0       0  
-Reducer 3        container        INITED      5          0        0        5       0       0  
-Reducer 4        container        INITED      1          0        0        1       0       0  
-[2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [======>>--------------------] 26%   ELAPSED TIME: 10.79 s    
-[22;0m[2K----------------------------------------------------------------------------------------------
-[10A[2K----------------------------------------------------------------------------------------------
-[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
-[22;0m[2K----------------------------------------------------------------------------------------------
-[2KMap 1 .....      container       RUNNING     22         13        9        0       0       0  
-Reducer 2        container       RUNNING     10          0        8        2       0       0  
-Reducer 3        container        INITED      5          0        0        5       0       0  
-Reducer 4        container        INITED      1          0        0        1       0       0  
-[2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 00/04  [========>>------------------] 34%   ELAPSED TIME: 11.79 s    
+[2K[31;1mVERTICES: 00/04  [=======>>-------------------] 28%   ELAPSED TIME: 11.91 s    
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -657,17 +656,27 @@ Reducer 2        container       RUNNING     10          0       10        0    
 Reducer 3        container        INITED      5          0        0        5       0       0  
 Reducer 4        container        INITED      1          0        0        1       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 01/04  [===============>>-----------] 57%   ELAPSED TIME: 12.79 s    
+[2K[31;1mVERTICES: 01/04  [===============>>-----------] 57%   ELAPSED TIME: 12.92 s    
+[22;0m[2K----------------------------------------------------------------------------------------------
+[10A[2K----------------------------------------------------------------------------------------------
+[2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
+[22;0m[2K----------------------------------------------------------------------------------------------
+[2KMap 1 .......... container     SUCCEEDED     22         22        0        0       0       0  
+Reducer 2 ....   container       RUNNING     10          7        3        0       0       0  
+Reducer 3        container       RUNNING      5          0        4        1       0       0  
+Reducer 4        container        INITED      1          0        0        1       0       0  
+[2K----------------------------------------------------------------------------------------------
+[2K[31;1mVERTICES: 01/04  [===================>>-------] 76%   ELAPSED TIME: 13.92 s    
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
 [22;0m[2K----------------------------------------------------------------------------------------------
 [2KMap 1 .......... container     SUCCEEDED     22         22        0        0       0       0  
 Reducer 2 ...... container     SUCCEEDED     10         10        0        0       0       0  
-Reducer 3        container       RUNNING      5          0        5        0       0       0  
-Reducer 4        container        INITED      1          0        0        1       0       0  
+Reducer 3 ...... container     SUCCEEDED      5          5        0        0       0       0  
+Reducer 4        container       RUNNING      1          0        1        0       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 02/04  [=====================>>-----] 84%   ELAPSED TIME: 13.79 s    
+[2K[31;1mVERTICES: 03/04  [=========================>>-] 97%   ELAPSED TIME: 14.92 s    
 [22;0m[2K----------------------------------------------------------------------------------------------
 [10A[2K----------------------------------------------------------------------------------------------
 [2K[36;1m        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED  
@@ -677,21 +686,21 @@ Reducer 2 ...... container     SUCCEEDED     10         10        0        0    
 Reducer 3 ...... container     SUCCEEDED      5          5        0        0       0       0  
 Reducer 4 ...... container     SUCCEEDED      1          1        0        0       0       0  
 [2K----------------------------------------------------------------------------------------------
-[2K[31;1mVERTICES: 04/04  [==========================>>] 100%  ELAPSED TIME: 14.43 s    
+[2K[31;1mVERTICES: 04/04  [==========================>>] 100%  ELAPSED TIME: 15.23 s    
 [22;0m[2K----------------------------------------------------------------------------------------------
 INFO  : Starting task [Stage-2:DEPENDENCY_COLLECTION] in serial mode
 INFO  : Starting task [Stage-0:MOVE] in serial mode
-INFO  : Loading data to table team11_projectdb.q4_results from hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-36-30_905_8612033599024872575-2189/-ext-10000
+INFO  : Loading data to table team11_projectdb.q4_results from hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/q4_results/.hive-staging_hive_2026-05-10_18-41-43_846_4913126272001890574-2246/-ext-10000
 INFO  : Starting task [Stage-3:STATS] in serial mode
-INFO  : Completed executing command(queryId=hive_20260510183630_3d4bc78c-d102-4a29-ab23-b4514fb0372e); Time taken: 18.781 seconds
+INFO  : Completed executing command(queryId=hive_20260510184143_a872a3af-1f81-4897-bbaf-1b814c83d8ec); Time taken: 19.464 seconds
 INFO  : OK
-No rows affected (19.131 seconds)
-INFO  : Compiling command(queryId=hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687): INSERT OVERWRITE DIRECTORY 'project/output/q4'
+No rows affected (19.811 seconds)
+INFO  : Compiling command(queryId=hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6): INSERT OVERWRITE DIRECTORY 'project/output/q4'
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 SELECT * FROM q4_results
 INFO  : Semantic Analysis Completed (retrial = false)
 INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:popularity_bucket, type:string, comment:null), FieldSchema(name:n_tracks, type:bigint, comment:null), FieldSchema(name:n_interactions, type:bigint, comment:null), FieldSchema(name:n_positive, type:bigint, comment:null), FieldSchema(name:positive_rate, type:double, comment:null)], properties:null)
-INFO  : EXPLAIN output for queryid hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687 : STAGE DEPENDENCIES:
+INFO  : EXPLAIN output for queryid hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6 : STAGE DEPENDENCIES:
   Stage-1 is a root stage [MAPRED]
   Stage-2 depends on stages: Stage-1 [DEPENDENCY_COLLECTION]
   Stage-0 depends on stages: Stage-1 [MOVE]
@@ -699,8 +708,8 @@ INFO  : EXPLAIN output for queryid hive_20260510183650_45e46d85-1671-4516-b6a0-4
 STAGE PLANS:
   Stage: Stage-1
     Tez
-      DagId: hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687:4534
-      DagName: hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687:4534
+      DagId: hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6:4589
+      DagName: hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6:4589
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -715,10 +724,10 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-                      directory: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-36-50_068_2389108477254426283-2189/-ext-10000
+                      directory: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-42-03_675_684918649992739579-2246/-ext-10000
                       NumFilesPerFileSink: 1
                       Statistics: Num rows: 6 Data size: 186 Basic stats: COMPLETE Column stats: NONE
-                      Stats Publishing Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-36-50_068_2389108477254426283-2189/-ext-10000/
+                      Stats Publishing Key Prefix: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-42-03_675_684918649992739579-2246/-ext-10000/
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -762,7 +771,7 @@ STAGE PLANS:
                     serialization.format ,
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 192
-                    transient_lastDdlTime 1778427409
+                    transient_lastDdlTime 1778427723
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -788,7 +797,7 @@ STAGE PLANS:
                       serialization.format ,
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 192
-                      transient_lastDdlTime 1778427409
+                      transient_lastDdlTime 1778427723
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: team11_projectdb.q4_results
                   name: team11_projectdb.q4_results
@@ -802,33 +811,33 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-36-50_068_2389108477254426283-2189/-ext-10000
+          source: hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-42-03_675_684918649992739579-2246/-ext-10000
           destination: project/output/q4
 
 
-INFO  : Completed compiling command(queryId=hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687); Time taken: 0.367 seconds
-INFO  : Executing command(queryId=hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687): INSERT OVERWRITE DIRECTORY 'project/output/q4'
+INFO  : Completed compiling command(queryId=hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6); Time taken: 0.218 seconds
+INFO  : Executing command(queryId=hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6): INSERT OVERWRITE DIRECTORY 'project/output/q4'
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 SELECT * FROM q4_results
-INFO  : Query ID = hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687
+INFO  : Query ID = hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6
 INFO  : Total jobs = 1
 INFO  : Launching Job 1 out of 1
 INFO  : Starting task [Stage-1:MAPRED] in serial mode
-INFO  : Subscribed to counters: [] for queryId: hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687
+INFO  : Subscribed to counters: [] for queryId: hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6
 INFO  : Session is already open
 INFO  : Dag name: INSERT OVERWRITE DIRECTORY 'pro...q4_results (Stage-1)
-INFO  : Status: Running (Executing on YARN cluster with App id application_1777989965680_4782)
+INFO  : Status: Running (Executing on YARN cluster with App id application_1777989965680_4816)
 
 INFO  : Starting task [Stage-2:DEPENDENCY_COLLECTION] in serial mode
 INFO  : Starting task [Stage-0:MOVE] in serial mode
-INFO  : Moving data to directory project/output/q4 from hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-36-50_068_2389108477254426283-2189/-ext-10000
-INFO  : Completed executing command(queryId=hive_20260510183650_45e46d85-1671-4516-b6a0-4499c44fd687); Time taken: 0.497 seconds
+INFO  : Moving data to directory project/output/q4 from hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/output/q4/.hive-staging_hive_2026-05-10_18-42-03_675_684918649992739579-2246/-ext-10000
+INFO  : Completed executing command(queryId=hive_20260510184203_0ee07319-2d4a-457e-ab0a-a1a6a9a393f6); Time taken: 0.406 seconds
 INFO  : OK
-No rows affected (0.886 seconds)
-INFO  : Compiling command(queryId=hive_20260510183650_ea913c40-9032-4815-bb7c-98911927f9a5): SELECT * FROM q4_results
+No rows affected (0.649 seconds)
+INFO  : Compiling command(queryId=hive_20260510184204_eabd4880-ede0-4896-a26b-1ea79c993fae): SELECT * FROM q4_results
 INFO  : Semantic Analysis Completed (retrial = false)
 INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:popularity_bucket, type:string, comment:null), FieldSchema(name:n_tracks, type:bigint, comment:null), FieldSchema(name:n_interactions, type:bigint, comment:null), FieldSchema(name:n_positive, type:bigint, comment:null), FieldSchema(name:positive_rate, type:double, comment:null)], properties:null)
-INFO  : EXPLAIN output for queryid hive_20260510183650_ea913c40-9032-4815-bb7c-98911927f9a5 : STAGE DEPENDENCIES:
+INFO  : EXPLAIN output for queryid hive_20260510184204_eabd4880-ede0-4896-a26b-1ea79c993fae : STAGE DEPENDENCIES:
   Stage-0 is a root stage [FETCH]
 
 STAGE PLANS:
@@ -845,9 +854,9 @@ STAGE PLANS:
             ListSink
 
 
-INFO  : Completed compiling command(queryId=hive_20260510183650_ea913c40-9032-4815-bb7c-98911927f9a5); Time taken: 0.23 seconds
-INFO  : Executing command(queryId=hive_20260510183650_ea913c40-9032-4815-bb7c-98911927f9a5): SELECT * FROM q4_results
-INFO  : Completed executing command(queryId=hive_20260510183650_ea913c40-9032-4815-bb7c-98911927f9a5); Time taken: 0.0 seconds
+INFO  : Completed compiling command(queryId=hive_20260510184204_eabd4880-ede0-4896-a26b-1ea79c993fae); Time taken: 0.246 seconds
+INFO  : Executing command(queryId=hive_20260510184204_eabd4880-ede0-4896-a26b-1ea79c993fae): SELECT * FROM q4_results
+INFO  : Completed executing command(queryId=hive_20260510184204_eabd4880-ede0-4896-a26b-1ea79c993fae); Time taken: 0.001 seconds
 INFO  : OK
-6 rows selected (0.3 seconds)
+6 rows selected (0.532 seconds)
 Closing: 0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10001
