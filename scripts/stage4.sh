@@ -68,55 +68,27 @@ require_hdfs_dir () {
 }
 
 echo ""
-echo "--- Step 1: Checking Stage 2 and Stage 3 HDFS artifacts ---"
+echo "--- Step 1: Checking Stage 3 HDFS artifacts ---"
 for path in \
-    project/hive/warehouse/tracks_part \
-    project/hive/warehouse/interactions_part \
-    project/hive/warehouse/q1_results \
-    project/hive/warehouse/q2_results \
-    project/hive/warehouse/q3_results \
-    project/hive/warehouse/q4_results \
-    project/hive/warehouse/q5_results \
-    project/hive/warehouse/q6_results \
     project/output/evaluation \
     project/output/model1_predictions \
-    project/output/model2_predictions \
-    project/output/model1_scores \
-    project/output/model2_scores
+    project/output/model2_predictions
 do
     require_hdfs_dir "${path}"
     echo "OK: ${path}"
 done
 
 echo ""
-echo "--- Step 2: Creating Stage 4 Hive tables and views ---"
+echo "--- Step 2: Creating Stage 3 Hive tables ---"
 beeline_run "sql/stage4.hql" "output/stage4_hive_results.txt"
 echo "Stage 4 Hive results saved to output/stage4_hive_results.txt"
 
 echo ""
-echo "--- Step 3: Superset dashboard datasets ---"
+echo "--- Step 3: Superset datasets ---"
 cat <<'DATASETS'
-Data description:
-  - stage4_dataset_summary
-  - stage4_table_columns
-  - stage4_track_sample
-  - stage4_interaction_sample
-
-Stage 2 EDA:
-  - q1_results
-  - q2_results
-  - q3_results
-  - q4_results
-  - q5_results
-  - q6_results
-
-Stage 3 ML:
-  - stage4_feature_extraction_summary
-  - stage4_model_comparison
-  - stage4_model_metrics_long
-  - stage4_prediction_confusion
-  - stage4_prediction_rates
-  - stage4_score_summary
+  - stage3_evaluation
+  - stage3_model1_predictions
+  - stage3_model2_predictions
 DATASETS
 
 echo ""
