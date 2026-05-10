@@ -1,0 +1,368 @@
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Stage 2: Hive data warehouse for team11.
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Builds  team11_projectdb  on top of the Sqoop  AVRO output, materialises
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- partitioned + bucketed copies, and drops the u n-optimised originals.
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP DATABASE IF EXISTS team11_projectdb CASCADE; 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE DATABASE team11_projectdb LOCATION "projec t/hive/warehouse";
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> USE team11_projectdb;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS tracks;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE EXTERNAL TABLE tracks
+. . . . . . . . . . . . . . . . . . . . . . .> STORED AS AVRO
+. . . . . . . . . . . . . . . . . . . . . . .> LOCATION 'project/warehouse/tracks'
+. . . . . . . . . . . . . . . . . . . . . . .> TBLPROPERTIES ('avro.schema.url'='project/warehou se/avsc/tracks.avsc');
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS interactions;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE EXTERNAL TABLE interactions
+. . . . . . . . . . . . . . . . . . . . . . .> STORED AS AVRO
+. . . . . . . . . . . . . . . . . . . . . . .> LOCATION 'project/warehouse/interactions'
+. . . . . . . . . . . . . . . . . . . . . . .> TBLPROPERTIES ('avro.schema.url'='project/warehou se/avsc/interactions.avsc');
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SHOW TABLES;
++---------------+
+|   tab_name    |
++---------------+
+| interactions  |
+| tracks        |
++---------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SELECT 'tracks_count'       AS metric, COUNT(*) A S value FROM tracks;
++---------------+----------+
+|    metric     |  value   |
++---------------+----------+
+| tracks_count  | 1204025  |
++---------------+----------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SELECT 'interactions_count' AS metric, COUNT(*) A S value FROM interactions;
++---------------------+-----------+
+|       metric        |   value   |
++---------------------+-----------+
+| interactions_count  | 11808554  |
++---------------------+-----------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.dynamic.partition              = tr ue;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.dynamic.partition.mode         = no nstrict;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.enforce.bucketing                   = tr ue;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.max.dynamic.partitions         = 50 00;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.max.dynamic.partitions.pernode = 20 00;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.execution.engine                    = te z;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET hive.exec.compress.output                = tr ue;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET mapred.output.compress                   = tr ue;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET mapred.output.compression.codec          = or g.apache.hadoop.io.compress.SnappyCodec;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SET orc.compress                             = SN APPY;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- year is omitted from the column list because i t becomes the partition key;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- `key` and `mode` are HiveQL reserved words and  must be back-ticked.
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS tracks_part;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE EXTERNAL TABLE tracks_part(
+. . . . . . . . . . . . . . . . . . . . . . .>     id               STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     name             STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     album            STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     album_id         STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     artists          STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     artist_ids       STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     track_number     INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     disc_number      INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     explicit         BOOLEAN,
+. . . . . . . . . . . . . . . . . . . . . . .>     danceability     DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     energy           DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     `key`            INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     loudness         DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     `mode`           INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     speechiness      DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     acousticness     DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     instrumentalness DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     liveness         DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     valence          DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     tempo            DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     duration_ms      INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     time_signature   DOUBLE,
+. . . . . . . . . . . . . . . . . . . . . . .>     release_date     STRING
+. . . . . . . . . . . . . . . . . . . . . . .> )
+. . . . . . . . . . . . . . . . . . . . . . .> PARTITIONED BY (year INT)
+. . . . . . . . . . . . . . . . . . . . . . .> CLUSTERED BY  (id) INTO 11 BUCKETS
+. . . . . . . . . . . . . . . . . . . . . . .> STORED AS ORC
+. . . . . . . . . . . . . . . . . . . . . . .> LOCATION 'project/hive/warehouse/tracks_part'
+. . . . . . . . . . . . . . . . . . . . . . .> TBLPROPERTIES ('orc.compress'='SNAPPY');
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> INSERT OVERWRITE TABLE tracks_part PARTITION (yea r)
+. . . . . . . . . . . . . . . . . . . . . . .> SELECT
+. . . . . . . . . . . . . . . . . . . . . . .>     id, name, album, album_id, artists, artist_id s,
+. . . . . . . . . . . . . . . . . . . . . . .>     track_number, disc_number, explicit,
+. . . . . . . . . . . . . . . . . . . . . . .>     danceability, energy, `key`, loudness, `mode` ,
+. . . . . . . . . . . . . . . . . . . . . . .>     speechiness, acousticness, instrumentalness,
+. . . . . . . . . . . . . . . . . . . . . . .>     liveness, valence, tempo,
+. . . . . . . . . . . . . . . . . . . . . . .>     duration_ms, time_signature, release_date,
+. . . . . . . . . . . . . . . . . . . . . . .>     year
+. . . . . . . . . . . . . . . . . . . . . . .> FROM tracks;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- interaction_flag is the binary target for stag e 3 ML, so partitioning
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- by it gives free class-based pruning at traini ng time.
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS interactions_part;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> CREATE EXTERNAL TABLE interactions_part(
+. . . . . . . . . . . . . . . . . . . . . . .>     id      INT,
+. . . . . . . . . . . . . . . . . . . . . . .>     user_id STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     item_id STRING,
+. . . . . . . . . . . . . . . . . . . . . . .>     ts      BIGINT
+. . . . . . . . . . . . . . . . . . . . . . .> )
+. . . . . . . . . . . . . . . . . . . . . . .> PARTITIONED BY (interaction_flag INT)
+. . . . . . . . . . . . . . . . . . . . . . .> CLUSTERED BY  (user_id) INTO 11 BUCKETS
+. . . . . . . . . . . . . . . . . . . . . . .> STORED AS ORC
+. . . . . . . . . . . . . . . . . . . . . . .> LOCATION 'project/hive/warehouse/interactions_par t'
+. . . . . . . . . . . . . . . . . . . . . . .> TBLPROPERTIES ('orc.compress'='SNAPPY');
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> INSERT OVERWRITE TABLE interactions_part PARTITIO N (interaction_flag)
+. . . . . . . . . . . . . . . . . . . . . . .> SELECT id, user_id, item_id, ts, interaction_flag 
+. . . . . . . . . . . . . . . . . . . . . . .> FROM interactions;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- Drop the un-optimised tables (checklist requir ement). Because they are
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> -- EXTERNAL the underlying AVRO files in project/ warehouse/ are kept on HDFS.
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS tracks;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DROP TABLE IF EXISTS interactions;
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SHOW TABLES;
++--------------------+
+|      tab_name      |
++--------------------+
+| interactions_part  |
+| tracks_part        |
++--------------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SHOW PARTITIONS tracks_part;
++------------+
+| partition  |
++------------+
+| year=0     |
+| year=1900  |
+| year=1908  |
+| year=1909  |
+| year=1917  |
+| year=1920  |
+| year=1923  |
+| year=1924  |
+| year=1925  |
+| year=1926  |
+| year=1927  |
+| year=1928  |
+| year=1929  |
+| year=1930  |
+| year=1931  |
+| year=1932  |
+| year=1933  |
+| year=1935  |
+| year=1936  |
+| year=1937  |
+| year=1938  |
+| year=1939  |
+| year=1942  |
+| year=1943  |
+| year=1944  |
+| year=1945  |
+| year=1946  |
+| year=1947  |
+| year=1948  |
+| year=1949  |
+| year=1950  |
+| year=1951  |
+| year=1952  |
+| year=1953  |
+| year=1954  |
+| year=1955  |
+| year=1956  |
+| year=1957  |
+| year=1958  |
+| year=1959  |
+| year=1960  |
+| year=1961  |
+| year=1962  |
+| year=1963  |
+| year=1964  |
+| year=1965  |
+| year=1966  |
+| year=1967  |
+| year=1968  |
+| year=1969  |
+| year=1970  |
+| year=1971  |
+| year=1972  |
+| year=1973  |
+| year=1974  |
+| year=1975  |
+| year=1976  |
+| year=1977  |
+| year=1978  |
+| year=1979  |
+| year=1980  |
+| year=1981  |
+| year=1982  |
+| year=1983  |
+| year=1984  |
+| year=1985  |
+| year=1986  |
+| year=1987  |
+| year=1988  |
+| year=1989  |
+| year=1990  |
+| year=1991  |
+| year=1992  |
+| year=1993  |
+| year=1994  |
+| year=1995  |
+| year=1996  |
+| year=1997  |
+| year=1998  |
+| year=1999  |
+| year=2000  |
+| year=2001  |
+| year=2002  |
+| year=2003  |
+| year=2004  |
+| year=2005  |
+| year=2006  |
+| year=2007  |
+| year=2008  |
+| year=2009  |
+| year=2010  |
+| year=2011  |
+| year=2012  |
+| year=2013  |
+| year=2014  |
+| year=2015  |
+| year=2016  |
+| year=2017  |
+| year=2018  |
+| year=2019  |
++------------+
+| partition  |
++------------+
+| year=2020  |
++------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SHOW PARTITIONS interactions_part;
++---------------------+
+|      partition      |
++---------------------+
+| interaction_flag=0  |
+| interaction_flag=1  |
++---------------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DESCRIBE FORMATTED tracks_part;
++-------------------------------+----------------------------------------------------+-----------------------------+
+|           col_name            |                     data_type                      |           comment           |
++-------------------------------+----------------------------------------------------+-----------------------------+
+| # col_name                    | data_type                                          | comment                     |
+| id                            | string                                             |                             |
+| name                          | string                                             |                             |
+| album                         | string                                             |                             |
+| album_id                      | string                                             |                             |
+| artists                       | string                                             |                             |
+| artist_ids                    | string                                             |                             |
+| track_number                  | int                                                |                             |
+| disc_number                   | int                                                |                             |
+| explicit                      | boolean                                            |                             |
+| danceability                  | double                                             |                             |
+| energy                        | double                                             |                             |
+| key                           | int                                                |                             |
+| loudness                      | double                                             |                             |
+| mode                          | int                                                |                             |
+| speechiness                   | double                                             |                             |
+| acousticness                  | double                                             |                             |
+| instrumentalness              | double                                             |                             |
+| liveness                      | double                                             |                             |
+| valence                       | double                                             |                             |
+| tempo                         | double                                             |                             |
+| duration_ms                   | int                                                |                             |
+| time_signature                | double                                             |                             |
+| release_date                  | string                                             |                             |
+|                               | NULL                                               | NULL                        |
+| # Partition Information       | NULL                                               | NULL                        |
+| # col_name                    | data_type                                          | comment                     |
+| year                          | int                                                |                             |
+|                               | NULL                                               | NULL                        |
+| # Detailed Table Information  | NULL                                               | NULL                        |
+| Database:                     | team11_projectdb                                   | NULL                        |
+| OwnerType:                    | USER                                               | NULL                        |
+| Owner:                        | team11                                             | NULL                        |
+| CreateTime:                   | Sun May 10 18:38:36 MSK 2026                       | NULL                        |
+| LastAccessTime:               | UNKNOWN                                            | NULL                        |
+| Retention:                    | 0                                                  | NULL                        |
+| Location:                     | hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/tracks_part | NULL                        |
+| Table Type:                   | EXTERNAL_TABLE                                     | NULL                        |
+| Table Parameters:             | NULL                                               | NULL                        |
+|                               | COLUMN_STATS_ACCURATE                              | {\"BASIC_STATS\":\"true\"}  |
+|                               | EXTERNAL                                           | TRUE                        |
+|                               | bucketing_version                                  | 2                           |
+|                               | numFiles                                           | 1092                        |
+|                               | numPartitions                                      | 101                         |
+|                               | numRows                                            | 1204025                     |
+|                               | orc.compress                                       | SNAPPY                      |
+|                               | rawDataSize                                        | 1028709384                  |
+|                               | totalSize                                          | 184321989                   |
+|                               | transient_lastDdlTime                              | 1778427516                  |
+|                               | NULL                                               | NULL                        |
+| # Storage Information         | NULL                                               | NULL                        |
+| SerDe Library:                | org.apache.hadoop.hive.ql.io.orc.OrcSerde          | NULL                        |
+| InputFormat:                  | org.apache.hadoop.hive.ql.io.orc.OrcInputFormat    | NULL                        |
+| OutputFormat:                 | org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat   | NULL                        |
+| Compressed:                   | No                                                 | NULL                        |
+| Num Buckets:                  | 11                                                 | NULL                        |
+| Bucket Columns:               | [id]                                               | NULL                        |
+| Sort Columns:                 | []                                                 | NULL                        |
+| Storage Desc Params:          | NULL                                               | NULL                        |
+|                               | serialization.format                               | 1                           |
++-------------------------------+----------------------------------------------------+-----------------------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> DESCRIBE FORMATTED interactions_part;
++-------------------------------+----------------------------------------------------+-----------------------------+
+|           col_name            |                     data_type                      |           comment           |
++-------------------------------+----------------------------------------------------+-----------------------------+
+| # col_name                    | data_type                                          | comment                     |
+| id                            | int                                                |                             |
+| user_id                       | string                                             |                             |
+| item_id                       | string                                             |                             |
+| ts                            | bigint                                             |                             |
+|                               | NULL                                               | NULL                        |
+| # Partition Information       | NULL                                               | NULL                        |
+| # col_name                    | data_type                                          | comment                     |
+| interaction_flag              | int                                                |                             |
+|                               | NULL                                               | NULL                        |
+| # Detailed Table Information  | NULL                                               | NULL                        |
+| Database:                     | team11_projectdb                                   | NULL                        |
+| OwnerType:                    | USER                                               | NULL                        |
+| Owner:                        | team11                                             | NULL                        |
+| CreateTime:                   | Sun May 10 18:39:16 MSK 2026                       | NULL                        |
+| LastAccessTime:               | UNKNOWN                                            | NULL                        |
+| Retention:                    | 0                                                  | NULL                        |
+| Location:                     | hdfs://hadoop-02.uni.innopolis.ru:8020/user/team11/project/hive/warehouse/interactions_part | NULL                        |
+| Table Type:                   | EXTERNAL_TABLE                                     | NULL                        |
+| Table Parameters:             | NULL                                               | NULL                        |
+|                               | COLUMN_STATS_ACCURATE                              | {\"BASIC_STATS\":\"true\"}  |
+|                               | EXTERNAL                                           | TRUE                        |
+|                               | bucketing_version                                  | 2                           |
+|                               | numFiles                                           | 22                          |
+|                               | numPartitions                                      | 2                           |
+|                               | numRows                                            | 11808554                    |
+|                               | orc.compress                                       | SNAPPY                      |
+|                               | rawDataSize                                        | 2538839110                  |
+|                               | totalSize                                          | 164440292                   |
+|                               | transient_lastDdlTime                              | 1778427556                  |
+|                               | NULL                                               | NULL                        |
+| # Storage Information         | NULL                                               | NULL                        |
+| SerDe Library:                | org.apache.hadoop.hive.ql.io.orc.OrcSerde          | NULL                        |
+| InputFormat:                  | org.apache.hadoop.hive.ql.io.orc.OrcInputFormat    | NULL                        |
+| OutputFormat:                 | org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat   | NULL                        |
+| Compressed:                   | No                                                 | NULL                        |
+| Num Buckets:                  | 11                                                 | NULL                        |
+| Bucket Columns:               | [user_id]                                          | NULL                        |
+| Sort Columns:                 | []                                                 | NULL                        |
+| Storage Desc Params:          | NULL                                               | NULL                        |
+|                               | serialization.format                               | 1                           |
++-------------------------------+----------------------------------------------------+-----------------------------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SELECT 'tracks_part'       AS metric, COUNT(*) AS  value FROM tracks_part;
++--------------+----------+
+|    metric    |  value   |
++--------------+----------+
+| tracks_part  | 1204025  |
++--------------+----------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> SELECT 'interactions_part' AS metric, COUNT(*) AS  value FROM interactions_part;
++--------------------+-----------+
+|       metric       |   value   |
++--------------------+-----------+
+| interactions_part  | 11808554  |
++--------------------+-----------+
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 
+0: jdbc:hive2://hadoop-03.uni.innopolis.ru:10> 

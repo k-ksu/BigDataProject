@@ -1,0 +1,4 @@
+sort_key,scenario,positive_rate
+1,Marginal: share of positive rows (all data),0.7014
+2,Cold tracks: 1 interaction per track,0.016
+3,Hit tracks: 100+ interactions per track,0.9971
