@@ -31,11 +31,23 @@ mkdir -p output
 beeline_run () {
     local hql="$1"
     local out="${2:-/dev/stdout}"
+    local base err ec
+    base="$(basename "${hql}" .hql)"
+    err="output/beeline_${base}.stderr"
+    set +e
     beeline -u "${JDBC_URL}" \
             -n "${TEAM}" -p "${password}" \
             --silent=false --showHeader=true --outputformat=table \
             -f "${hql}" \
-            > "${out}" 2> /dev/null
+            > "${out}" 2> "${err}"
+    ec=$?
+    set -e
+    if [ "${ec}" -ne 0 ]; then
+        echo "ERROR: beeline exited ${ec} on ${hql}"
+        echo "---- tail ${err} ----"
+        tail -80 "${err}" 2>/dev/null || true
+        exit "${ec}"
+    fi
 }
 
 echo ""

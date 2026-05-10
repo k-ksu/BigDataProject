@@ -65,11 +65,12 @@ FROM (
         positive_rate
     FROM agg
     WHERE popularity_bucket = '100+'
-) x
-ORDER BY sort_key;
+) x;
 
 INSERT OVERWRITE DIRECTORY 'project/output/q6'
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-SELECT * FROM q6_results;
+SELECT * FROM q6_results
+ORDER BY sort_key;
 
-SELECT * FROM q6_results;
+SELECT * FROM q6_results
+ORDER BY sort_key;
