@@ -70,9 +70,9 @@ require_hdfs_dir () {
 echo ""
 echo "--- Step 1: Checking Stage 3 HDFS artifacts ---"
 for path in \
-    project/output/evaluation \
-    project/output/model1_predictions \
-    project/output/model2_predictions
+    project/output/evaluation.csv \
+    project/output/model1_predictions.csv \
+    project/output/model2_predictions.csv
 do
     require_hdfs_dir "${path}"
     echo "OK: ${path}"
