@@ -145,5 +145,33 @@ See `STAGE2_INSTRUCTIONS.md` for a step-by-step run guide and the Apache Superse
 
 Stage 3 must run on the cluster with Yarn; do not run it in Spark local mode.
 
-### Stage 4: Presentation
-*TODO*
+### Stage 4: Presentation / Delivery
+
+**Scripts:** `scripts/stage4.sh` → `sql/stage4.hql` via `beeline`
+
+**What it does:**
+1. Checks that Stage 2 and Stage 3 HDFS artifacts exist
+2. Creates external Hive tables over Stage 3 CSV outputs
+3. Creates dashboard-friendly Hive views for Apache Superset
+4. Saves the Stage 4 Hive run output to `output/stage4_hive_results.txt`
+5. Prints the table/view names that should be used in Superset
+
+**Superset dashboard sections:**
+- Data description:
+  - `stage4_dataset_summary`
+  - `stage4_table_columns`
+  - `stage4_track_sample`
+  - `stage4_interaction_sample`
+- Stage 2 EDA insights:
+  - `q1_results`, `q2_results`, `q3_results`
+  - `q4_results`, `q5_results`, `q6_results`
+- Stage 3 ML modeling:
+  - `stage4_feature_extraction_summary`
+  - `stage4_model_comparison`
+  - `stage4_model_metrics_long`
+  - `stage4_prediction_confusion`
+  - `stage4_prediction_rates`
+  - `stage4_score_summary`
+
+The dashboard itself is created and published manually in Apache Superset.
+Stage 4 only prepares the Hive datasets/views required by the dashboard.
