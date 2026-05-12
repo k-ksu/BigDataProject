@@ -1,7 +1,7 @@
 # Big Data Project — Team 11
 
 **Course:** Big Data — Innopolis University  
-**Team:** team11 (4 members)  
+**Team:** team11: Danis Sharafiev, Kseniia Korchagina, Mariia Chugaeva, Diana Minnakhmetova
 **Dataset:** [Music Interaction](https://www.kaggle.com/datasets/huynguyen1902/music-interaction/data) (~1.3 GB)  
 **ML Task:** Recommendation System with soft relevance score (`rel_score`)
 
